@@ -1,0 +1,423 @@
+{
+  "visa": {
+    "tourist": {
+      "title": "Tourist Visa Information",
+      "description": "Short-term visas for tourists visiting the UAE.",
+      "eligibility": [
+        "Citizens of eligible countries",
+        "Valid passport with minimum 6 months validity",
+        "Return ticket",
+        "Proof of accommodation"
+      ],
+      "documents": [
+        "Passport copy",
+        "Passport-sized photograph with white background",
+        "Travel itinerary",
+        "Hotel booking confirmation"
+      ],
+      "fees": {
+        "14 days": "AED 300",
+        "30 days": "AED 500",
+        "90 days": "AED 1000",
+        "Service fee": "AED 100"
+      },
+      "processingTime": "2-4 business days",
+      "steps": [
+        "Apply through ICP website or app",
+        "Submit required documents",
+        "Pay the applicable fees",
+        "Receive visa via email"
+      ],
+      "source": "Federal Authority for Identity, Citizenship, Customs & Port Security",
+      "lastUpdated": "2023-12-15",
+      "confidenceLevel": "high"
+    },
+    "residence": {
+      "title": "Residence Visa Information",
+      "description": "Long-term visas for those living and working in the UAE.",
+      "eligibility": [
+        "Employment with UAE-registered company",
+        "Property ownership (for property-based visas)",
+        "Investment in UAE business (for investor visas)",
+        "Sponsorship by UAE resident (for family visas)"
+      ],
+      "documents": [
+        "Passport copy",
+        "Emirates ID application",
+        "Medical fitness certificate",
+        "Employment contract (for work visas)",
+        "Tenancy contract",
+        "Passport photos"
+      ],
+      "fees": {
+        "Application fee": "AED 300",
+        "Issue fee (1 year)": "AED 100",
+        "Issue fee (2 years)": "AED 200",
+        "Issue fee (3 years)": "AED 300",
+        "Medical test": "AED 250-750",
+        "Emirates ID": "AED 100-370"
+      },
+      "processingTime": "2-3 weeks",
+      "steps": [
+        "Obtain entry permit",
+        "Enter UAE",
+        "Complete medical fitness test",
+        "Apply for Emirates ID",
+        "Complete visa stamping process"
+      ],
+      "source": "Federal Authority for Identity, Citizenship, Customs & Port Security",
+      "lastUpdated": "2023-11-20",
+      "confidenceLevel": "high"
+    },
+    "golden": {
+      "title": "Golden Visa Information",
+      "description": "Long-term residence visas (5-10 years) for investors, entrepreneurs, and specialized talents.",
+      "eligibility": [
+        "Investors (min. AED 2 million in property or business)",
+        "Entrepreneurs (with approved project or existing business)",
+        "Specialized talents (scientists, doctors, artists, etc.)",
+        "Outstanding students with min. 95% in secondary school or 3.75 GPA in university"
+      ],
+      "documents": [
+        "Passport copy",
+        "Investment proof or talent verification",
+        "Bank statements (for investors)",
+        "CV and certificates (for specialized talents)",
+        "Medical fitness certificate",
+        "Emirates ID application"
+      ],
+      "fees": {
+        "Application fee": "AED 1,000",
+        "Issue fee (5 years)": "AED 2,500",
+        "Issue fee (10 years)": "AED 4,500",
+        "Medical test": "AED 250-750",
+        "Emirates ID": "AED 370"
+      },
+      "processingTime": "30-60 days",
+      "steps": [
+        "Submit nomination or application through ICP website",
+        "Receive initial approval",
+        "Complete medical fitness test",
+        "Apply for Emirates ID",
+        "Receive Golden Visa"
+      ],
+      "source": "Federal Authority for Identity, Citizenship, Customs & Port Security",
+      "lastUpdated": "2023-10-05",
+      "confidenceLevel": "high"
+    }
+  },
+  "emirates-id": {
+    "new": {
+      "title": "New Emirates ID Application",
+      "description": "Process for obtaining a new Emirates ID card for first-time applicants.",
+      "eligibility": [
+        "UAE citizens",
+        "UAE residents with valid residence visa",
+        "GCC nationals residing in UAE"
+      ],
+      "documents": [
+        "Original passport",
+        "Copy of residence visa (for expatriates)",
+        "Passport-sized photographs with white background",
+        "Birth certificate (for minors)"
+      ],
+      "fees": {
+        "Application fee": "AED 100",
+        "Card fee (1 year)": "AED 100",
+        "Card fee (2 years)": "AED 200",
+        "Card fee (3 years)": "AED 300",
+        "Card fee (5 years)": "AED 500",
+        "Service fee": "AED 70"
+      },
+      "processingTime": "3-5 business days after biometrics",
+      "steps": [
+        "Apply through ICP website or app",
+        "Pay the applicable fees",
+        "Visit an approved typing center for biometrics",
+        "Receive Emirates ID via Emirates Post"
+      ],
+      "source": "Federal Authority for Identity, Citizenship, Customs & Port Security",
+      "lastUpdated": "2023-12-01",
+      "confidenceLevel": "high"
+    },
+    "renewal": {
+      "title": "Emirates ID Renewal",
+      "description": "Process for renewing an existing Emirates ID card before or after expiry.",
+      "eligibility": [
+        "Current Emirates ID holders",
+        "Valid residence visa (for expatriates)"
+      ],
+      "documents": [
+        "Original passport",
+        "Copy of residence visa (for expatriates)",
+        "Existing Emirates ID card"
+      ],
+      "fees": {
+        "Application fee": "AED 100",
+        "Card fee (1 year)": "AED 100",
+        "Card fee (2 years)": "AED 200",
+        "Card fee (3 years)": "AED 300",
+        "Card fee (5 years)": "AED 500",
+        "Service fee": "AED 70",
+        "Late renewal fine": "AED 20 per day (max AED 1,000)"
+      },
+      "processingTime": "3-5 business days",
+      "steps": [
+        "Apply through ICP website or app",
+        "Pay the applicable fees",
+        "Visit an approved typing center for biometrics (if required)",
+        "Receive renewed Emirates ID via Emirates Post"
+      ],
+      "source": "Federal Authority for Identity, Citizenship, Customs & Port Security",
+      "lastUpdated": "2023-11-15",
+      "confidenceLevel": "high"
+    },
+    "replacement": {
+      "title": "Emirates ID Replacement",
+      "description": "Process for replacing a lost, damaged, or stolen Emirates ID card.",
+      "eligibility": [
+        "Current Emirates ID holders with lost/damaged cards",
+        "Valid residence visa (for expatriates)"
+      ],
+      "documents": [
+        "Original passport",
+        "Copy of residence visa (for expatriates)",
+        "Police report (for lost/stolen cards)",
+        "Damaged card (if applicable)"
+      ],
+      "fees": {
+        "Application fee": "AED 100",
+        "Replacement fee": "AED 300",
+        "Service fee": "AED 70"
+      },
+      "processingTime": "3-5 business days",
+      "steps": [
+        "Report loss/theft to police (if applicable)",
+        "Apply through ICP website or app",
+        "Pay the applicable fees",
+        "Visit an approved typing center for biometrics (if required)",
+        "Receive replacement Emirates ID via Emirates Post"
+      ],
+      "source": "Federal Authority for Identity, Citizenship, Customs & Port Security",
+      "lastUpdated": "2023-10-20",
+      "confidenceLevel": "high"
+    }
+  },
+  "business": {
+    "mainland": {
+      "title": "Mainland Business License",
+      "description": "Licenses for businesses operating in the UAE mainland with full foreign ownership now permitted in most sectors.",
+      "eligibility": [
+        "UAE citizens",
+        "GCC nationals",
+        "Foreign investors (100% ownership in most sectors)"
+      ],
+      "documents": [
+        "Passport copies of all shareholders",
+        "Emirates ID copies (for UAE residents)",
+        "No objection certificate from sponsor (for UAE residents)",
+        "Business plan",
+        "Tenancy contract for business premises"
+      ],
+      "fees": {
+        "Initial approval": "AED 100-1,000",
+        "Trade name reservation": "AED 620",
+        "License fee": "AED 10,000-50,000 (varies by activity and legal form)",
+        "Chamber of Commerce membership": "AED 1,000-2,500",
+        "Establishment card": "AED 600"
+      },
+      "processingTime": "1-2 weeks",
+      "steps": [
+        "Select business activity and legal form",
+        "Reserve trade name",
+        "Get initial approval",
+        "Prepare and notarize company documents",
+        "Secure business premises",
+        "Obtain external approvals (if required)",
+        "Pay license fees",
+        "Receive business license"
+      ],
+      "source": "Department of Economy and Tourism, Dubai",
+      "lastUpdated": "2023-09-10",
+      "confidenceLevel": "high"
+    },
+    "freezone": {
+      "title": "Free Zone Business License",
+      "description": "Licenses for businesses operating within UAE free zones with 100% foreign ownership and tax benefits.",
+      "eligibility": [
+        "Foreign investors",
+        "UAE citizens",
+        "GCC nationals"
+      ],
+      "documents": [
+        "Passport copies of all shareholders",
+        "CV and bank reference letters of shareholders",
+        "Business plan",
+        "Application form specific to the free zone"
+      ],
+      "fees": {
+        "Registration fee": "AED 10,000-40,000",
+        "License fee": "AED 15,000-50,000",
+        "Facility lease": "AED 15,000-200,000 (varies by free zone and size)",
+        "Visa allocation deposit": "AED 3,000-5,000 per visa"
+      },
+      "processingTime": "1-3 weeks",
+      "steps": [
+        "Select appropriate free zone",
+        "Submit application and documents",
+        "Receive initial approval",
+        "Sign lease agreement",
+        "Pay license and registration fees",
+        "Receive free zone license"
+      ],
+      "source": "Various Free Zone Authorities",
+      "lastUpdated": "2023-08-15",
+      "confidenceLevel": "high"
+    },
+    "renewal": {
+      "title": "Business License Renewal",
+      "description": "Process for renewing mainland or free zone business licenses in the UAE.",
+      "eligibility": [
+        "Existing business license holders",
+        "No outstanding fines or violations",
+        "Valid lease agreement"
+      ],
+      "documents": [
+        "Original business license",
+        "Tenancy contract",
+        "Membership certificate from Chamber of Commerce (for mainland)",
+        "Immigration establishment card",
+        "Passport copies of shareholders"
+      ],
+      "fees": {
+        "Mainland renewal": "AED 10,000-50,000",
+        "Free zone renewal": "AED 15,000-50,000",
+        "Chamber of Commerce renewal": "AED 1,000-2,500",
+        "Establishment card renewal": "AED 600",
+        "Late renewal fine": "Varies by authority (typically AED 1,000-5,000)"
+      },
+      "processingTime": "2-5 business days",
+      "steps": [
+        "Submit renewal application",
+        "Update company documents if needed",
+        "Pay renewal fees",
+        "Receive renewed license"
+      ],
+      "source": "Department of Economy and Tourism, Dubai / Free Zone Authorities",
+      "lastUpdated": "2023-07-20",
+      "confidenceLevel": "high"
+    }
+  },
+  "traffic": {
+    "fines": {
+      "title": "Traffic Fines Payment",
+      "description": "Process for checking and paying traffic fines in the UAE.",
+      "eligibility": [
+        "Vehicle owners",
+        "Drivers with UAE driving license"
+      ],
+      "documents": [
+        "Traffic file number or license plate number",
+        "Emirates ID or driving license"
+      ],
+      "fees": {
+        "Varies by violation type",
+        "Black points may apply",
+        "Discounts available during certain periods (up to 50%)"
+      },
+      "processingTime": "Immediate for online payments",
+      "steps": [
+        "Check fines through RTA website/app, MOI app, or Dubai Police app",
+        "Select fines to pay",
+        "Choose payment method",
+        "Complete payment",
+        "Receive payment confirmation"
+      ],
+      "source": "Roads and Transport Authority / Dubai Police",
+      "lastUpdated": "2023-12-10",
+      "confidenceLevel": "high"
+    },
+    "registration": {
+      "title": "Vehicle Registration",
+      "description": "Process for registering new vehicles or renewing vehicle registration in the UAE.",
+      "eligibility": [
+        "Vehicle owners with UAE residence",
+        "Vehicles that pass technical inspection",
+        "No outstanding fines"
+      ],
+      "documents": [
+        "Emirates ID",
+        "Current registration card (for renewal)",
+        "Insurance certificate",
+        "Export certificate (for imported vehicles)"
+      ],
+      "fees": {
+        "New registration": "AED 400-1,000",
+        "Renewal registration": "AED 350-960",
+        "Technical inspection": "AED 120-150",
+        "Number plate": "AED 35-50"
+      },
+      "processingTime": "Same day",
+      "steps": [
+        "Complete technical inspection",
+        "Obtain insurance certificate",
+        "Pay any outstanding fines",
+        "Submit registration application",
+        "Pay registration fees",
+        "Receive registration card and plates"
+      ],
+      "source": "Roads and Transport Authority",
+      "lastUpdated": "2023-11-05",
+      "confidenceLevel": "high"
+    },
+    "license": {
+      "title": "Driving License",
+      "description": "Process for obtaining or renewing a driving license in the UAE.",
+      "eligibility": [
+        "UAE citizens and residents",
+        "Minimum age: 18 years",
+        "Medical fitness"
+      ],
+      "documents": [
+        "Emirates ID",
+        "Passport copy with valid residence visa",
+        "No objection letter from sponsor (for new license)",
+        "Eye test certificate",
+        "Current driving license (for renewal)"
+      ],
+      "fees": {
+        "New license application": "AED 200",
+        "Theory test": "AED 200",
+        "Yard test": "AED 200",
+        "Road test": "AED 200",
+        "License issuance": "AED 100-300",
+        "Renewal": "AED 100-300"
+      },
+      "processingTime": {
+        "New license": "1-3 months (training period)",
+        "Renewal": "Same day"
+      },
+      "steps": {
+        "New License": [
+          "Open traffic file",
+          "Complete eye test",
+          "Enroll in driving school",
+          "Complete required lessons",
+          "Pass theory test",
+          "Pass yard test",
+          "Pass road test",
+          "Receive driving license"
+        ],
+        "Renewal": [
+          "Complete eye test",
+          "Submit renewal application",
+          "Pay renewal fees",
+          "Receive renewed license"
+        ]
+      },
+      "source": "Roads and Transport Authority",
+      "lastUpdated": "2023-10-15",
+      "confidenceLevel": "high"
+    }
+  }
+}

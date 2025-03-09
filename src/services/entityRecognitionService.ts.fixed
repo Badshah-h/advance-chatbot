@@ -779,21 +779,6 @@ function extractOrganizations(query: string, entities: RecognizedEntity[]): void
     { text: 'dubai art market', confidence: 0.9, type: 'AUTHORITY' },
     { text: 'dubai craft market', confidence: 0.9, type: 'AUTHORITY' },
     { text: 'dubai book market', confidence: 0.9, type: 'AUTHORITY' },
-    { text: 'dubai food market', confidence: 0.9, type: 'AUTHORITY' },
-    { text: 'dubai fish market', confidence: 0.9, type: 'AUTHORITY' },
-    { text: 'dubai meat market', confidence: 0.9, type: 'AUTHORITY' },
-    { text: 'dubai vegetable market', confidence: 0.9, type: 'AUTHORITY' },
-    { text: 'dubai fruit market', confidence: 0.9, type: 'AUTHORITY' },
-    { text: 'dubai date market', confidence: 0.9, type: 'AUTHORITY' },
-    { text: 'dubai carpet market', confidence: 0.9, type: 'AUTHORITY' },
-    { text: 'dubai antique market', confidence: 0.9, type: 'AUTHORITY' },
-    { text: 'dubai flea market', confidence: 0.9, type: 'AUTHORITY' },
-    { text: 'dubai night market', confidence: 0.9, type: 'AUTHORITY' },
-    { text: 'dubai farmers market', confidence: 0.9, type: 'AUTHORITY' },
-    { text: 'dubai organic market', confidence: 0.9, type: 'AUTHORITY' },
-    { text: 'dubai art market', confidence: 0.9, type: 'AUTHORITY' },
-    { text: 'dubai craft market', confidence: 0.9, type: 'AUTHORITY' },
-    { text: 'dubai book market', confidence: 0.9, type: 'AUTHORITY' },
     { text: 'dubai food market', confidence: 0.9, type: 'AUTHORITY' }
   ];
   
@@ -1208,4 +1193,36 @@ function determineIntents(query: string, entities: RecognizedEntity[], intents: 
     { action: 'have a good complete', intent: 'FAREWELL', confidence: 0.9 },
     { action: 'have a good conclude', intent: 'FAREWELL', confidence: 0.9 },
     { action: 'have a good close', intent: 'FAREWELL', confidence: 0.9 },
-', intent: 'FAREWELL', confidence: 0.9 }
+    { action: 'have a good shut', intent: 'FAREWELL', confidence: 0.9 },
+    { action: 'have a good stop', intent: 'FAREWELL', confidence: 0.9 },
+    { action: 'have a good pause', intent: 'FAREWELL', confidence: 0.9 },
+    { action: 'have a good resume', intent: 'FAREWELL', confidence: 0.9 }
+  ];
+  
+  for (const actionIntent of actionIntents) {
+    if (query.includes(actionIntent.action)) {
+      // Check if this intent is already added
+      const existingIntent = intents.find(i => i.intent === actionIntent.intent);
+      if (existingIntent) {
+        // Update confidence if this one is higher
+        if (actionIntent.confidence > existingIntent.confidence) {
+          existingIntent.confidence = actionIntent.confidence;
+        }
+      } else {
+        // Add new intent
+        intents.push({
+          intent: actionIntent.intent,
+          confidence: actionIntent.confidence
+        });
+      }
+    }
+  }
+  
+  // If no specific intents were found, add a default INFORMATION intent
+  if (intents.length === 0) {
+    intents.push({
+      intent: 'INFORMATION',
+      confidence: 0.7
+    });
+  }
+}

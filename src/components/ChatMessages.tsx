@@ -58,26 +58,39 @@ const ChatMessages = ({
     setFeedbackDialogOpen(true);
   };
 
-  const handleFeedbackSubmit = (feedback: {
+  const handleFeedbackSubmit = async (feedback: {
     rating: number;
     comment: string;
     helpful: boolean;
     messageId: string;
   }) => {
-    // In a real implementation, this would send the detailed feedback to a backend
-    console.log("Detailed feedback:", feedback);
+    try {
+      // Send the detailed feedback to the backend
+      const { submitFeedback } = await import("../services/apiService");
+      const { error } = await submitFeedback({
+        ...feedback,
+        userId: "guest", // This would be the actual user ID in a real implementation
+      });
 
-    // Update the thumbs up/down state if it changed
-    if (
-      (feedback.helpful && !initialHelpful) ||
-      (!feedback.helpful && initialHelpful)
-    ) {
-      onFeedback(
-        feedback.messageId,
-        feedback.helpful ? "positive" : "negative",
-      );
+      if (error) {
+        console.error("Error submitting feedback:", error);
+      }
+
+      // Update the thumbs up/down state if it changed
+      if (
+        (feedback.helpful && !initialHelpful) ||
+        (!feedback.helpful && initialHelpful)
+      ) {
+        onFeedback(
+          feedback.messageId,
+          feedback.helpful ? "positive" : "negative",
+        );
+      }
+    } catch (error) {
+      console.error("Error in handleFeedbackSubmit:", error);
     }
   };
+
   return (
     <div className="flex flex-col h-full w-full bg-white rounded-md border border-gray-200">
       <ScrollArea className="flex-1 p-4">

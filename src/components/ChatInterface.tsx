@@ -41,34 +41,80 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [showServiceCategories, setShowServiceCategories] = useState(true);
 
-  // Load chat history from localStorage on component mount
+  // Load chat history from database or localStorage on component mount
   useEffect(() => {
-    const userId = user ? user.id : "guest";
-    const savedMessages = loadChatHistory(userId);
+    const loadMessages = async () => {
+      try {
+        const userId = user ? user.id : "guest";
 
-    if (savedMessages && savedMessages.length > 0) {
-      setMessages(savedMessages);
-    } else if (user) {
-      // Add personalized welcome message for logged in users with no history
-      const welcomeMessage: Message = {
-        id: Date.now().toString(),
-        content: `Welcome back, ${user.name}! How can I assist you with government services today?`,
-        sender: "ai",
-        timestamp: new Date(),
-      };
-      setMessages([welcomeMessage]);
-    }
+        // Try to load from API first (which falls back to localStorage if needed)
+        const { loadChatMessages } = await import("../services/apiService");
+        const { data: apiMessages, error } = await loadChatMessages(userId);
+
+        if (error) {
+          console.error(
+            "Error loading messages from API, falling back to localStorage",
+          );
+          // Fall back to localStorage
+          const savedMessages = loadChatHistory(userId);
+          if (savedMessages && savedMessages.length > 0) {
+            setMessages(savedMessages);
+            return;
+          }
+        } else if (apiMessages && apiMessages.length > 0) {
+          setMessages(apiMessages);
+          return;
+        }
+
+        // If no messages were found or there was an error, and user is logged in
+        if (user) {
+          // Add personalized welcome message for logged in users with no history
+          const welcomeMessage: Message = {
+            id: Date.now().toString(),
+            content: `Welcome back, ${user.name}! How can I assist you with government services today?`,
+            sender: "ai",
+            timestamp: new Date(),
+          };
+          setMessages([welcomeMessage]);
+        }
+      } catch (error) {
+        console.error("Error loading chat history:", error);
+      }
+    };
+
+    loadMessages();
   }, [user]);
 
-  // Save chat history to localStorage whenever messages change
+  // Save chat history to database or localStorage whenever messages change
   useEffect(() => {
-    if (messages.length > 0) {
-      const userId = user ? user.id : "guest";
-      saveChatHistory(messages, userId);
-    }
+    const saveMessages = async () => {
+      if (messages.length > 0) {
+        const userId = user ? user.id : "guest";
+
+        try {
+          // Try to save to API first (which falls back to localStorage if needed)
+          const { saveChatMessages } = await import("../services/apiService");
+          const { error } = await saveChatMessages(messages, userId);
+
+          if (error) {
+            console.error(
+              "Error saving messages to API, falling back to localStorage",
+            );
+            // Fall back to localStorage
+            saveChatHistory(messages, userId);
+          }
+        } catch (error) {
+          console.error("Error saving chat history:", error);
+          // Fall back to localStorage
+          saveChatHistory(messages, userId);
+        }
+      }
+    };
+
+    saveMessages();
   }, [messages, user]);
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string) => {
     // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -160,15 +206,26 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const generateResponse = async (
     query: string,
   ): Promise<{ content: string; metadata?: any }> => {
-    // Import the AI service
-    const { generateAIResponse } = await import("../services/aiService");
-
     // Get the language code
     const langCode = language === "English" ? "en" : "ar";
 
-    // Generate response using the AI service
     try {
-      return await generateAIResponse(query, langCode);
+      // Try to use OpenAI service first if available
+      try {
+        const { generateOpenAIResponse } = await import(
+          "../services/openaiService"
+        );
+        return await generateOpenAIResponse(query, langCode);
+      } catch (openaiError) {
+        console.warn(
+          "OpenAI service unavailable, falling back to mock AI:",
+          openaiError,
+        );
+
+        // Fall back to mock AI service
+        const { generateAIResponse } = await import("../services/aiService");
+        return await generateAIResponse(query, langCode);
+      }
     } catch (error) {
       console.error("Error generating AI response:", error);
 
@@ -208,7 +265,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   };
 
   // Override handleSendMessage to check for auth
-  const handleSendMessageWithAuth = (content: string) => {
+  const handleSendMessageWithAuth = async (content: string) => {
     if (!user && checkAuthRequired(content)) {
       // Show auth modal for queries requiring authentication
       setIsAuthModalOpen(true);
@@ -301,14 +358,29 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       // Process the file
       const result = await processFile(file);
 
-      // Import the AI service for document processing
-      const { processDocumentWithAI } = await import("../services/aiService");
+      // Try to use OpenAI service first for document processing
+      let aiResponse;
+      try {
+        const { processDocumentWithOpenAI } = await import(
+          "../services/openaiService"
+        );
+        aiResponse = await processDocumentWithOpenAI(
+          result,
+          language === "English" ? "en" : "ar",
+        );
+      } catch (openaiError) {
+        console.warn(
+          "OpenAI document processing unavailable, falling back to mock processing:",
+          openaiError,
+        );
 
-      // Get AI analysis of the document
-      const aiResponse = await processDocumentWithAI(
-        result,
-        language === "English" ? "en" : "ar",
-      );
+        // Fall back to mock document processing
+        const { processDocumentWithAI } = await import("../services/aiService");
+        aiResponse = await processDocumentWithAI(
+          result,
+          language === "English" ? "en" : "ar",
+        );
+      }
 
       // Replace the processing message with the AI response
       const responseMessage: Message = {

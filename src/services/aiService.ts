@@ -25,7 +25,8 @@ export interface AIResponse {
 }
 
 // Service categories for rich card generation
-const serviceData: Record<string, any> = {
+// This would be replaced with database data in a production environment
+export const serviceData: Record<string, any> = {
   "tourist-visa": {
     id: "tourist-visa",
     title: "Tourist Visa",
@@ -192,7 +193,7 @@ export async function generateAIResponse(
   // Check for service-specific queries to generate rich cards
   const serviceMatch = checkForServiceMatch(query);
   if (serviceMatch) {
-    return generateRichCardResponse(serviceMatch, language);
+    return await generateRichCardResponse(serviceMatch, language);
   }
 
   // Use the response formatter for other queries
@@ -247,64 +248,132 @@ function checkForServiceMatch(query: string): string | null {
 /**
  * Generate a rich card response for a specific service
  */
-function generateRichCardResponse(
+async function generateRichCardResponse(
   serviceId: string,
   language: "en" | "ar",
-): AIResponse {
-  const service = serviceData[serviceId];
-  if (!service) {
+): Promise<AIResponse> {
+  try {
+    // Try to get service info from the API first
+    const { getServiceInfo } = await import("./apiService");
+    const { data: service, error } = await getServiceInfo(serviceId);
+
+    if (error || !service) {
+      console.error("Error getting service info, falling back to static data");
+      // Fall back to static data
+      const staticService = serviceData[serviceId];
+      if (!staticService) {
+        return {
+          content:
+            language === "en"
+              ? "I couldn't find specific information about that service."
+              : "لم أتمكن من العثور على معلومات محددة حول هذه الخدمة.",
+          metadata: {
+            confidenceLevel: "low",
+          },
+        };
+      }
+      var serviceData = staticService;
+    }
+
+    // Create a rich card response
+    const richCardData = {
+      type: "service",
+      data: service || serviceData,
+    };
+
+    const introText =
+      language === "en"
+        ? `Here's information about the ${service?.title || serviceData.title}:`
+        : `إليك معلومات حول ${service?.title || serviceData.title}:`;
+
+    const outroText =
+      language === "en"
+        ? "You can view more details or apply online using the buttons above."
+        : "يمكنك عرض المزيد من التفاصيل أو التقديم عبر الإنترنت باستخدام الأزرار أعلاه.";
+
+    const richCardContent = `${introText}\n\n<rich-card>${JSON.stringify(richCardData)}</rich-card>\n\n${outroText}`;
+
     return {
-      content:
-        language === "en"
-          ? "I couldn't find specific information about that service."
-          : "لم أتمكن من العثور على معلومات محددة حول هذه الخدمة.",
+      content: richCardContent,
       metadata: {
-        confidenceLevel: "low",
+        confidenceLevel: "high",
+        source:
+          "Federal Authority for Identity, Citizenship, Customs & Port Security",
+        lastUpdated: "2023-12-01",
+        quickReplies: [
+          {
+            id: "more-details",
+            text: language === "en" ? "More details" : "المزيد من التفاصيل",
+          },
+          {
+            id: "requirements",
+            text: language === "en" ? "Requirements" : "المتطلبات",
+          },
+          {
+            id: "apply",
+            text: language === "en" ? "How to apply" : "كيفية التقديم",
+          },
+        ],
+      },
+    };
+  } catch (error) {
+    console.error("Error in generateRichCardResponse:", error);
+    // Fall back to static data
+    const service = serviceData[serviceId];
+    if (!service) {
+      return {
+        content:
+          language === "en"
+            ? "I couldn't find specific information about that service."
+            : "لم أتمكن من العثور على معلومات محددة حول هذه الخدمة.",
+        metadata: {
+          confidenceLevel: "low",
+        },
+      };
+    }
+
+    // Create a rich card response with static data
+    const richCardData = {
+      type: "service",
+      data: service,
+    };
+
+    const introText =
+      language === "en"
+        ? `Here's information about the ${service.title}:`
+        : `إليك معلومات حول ${service.title}:`;
+
+    const outroText =
+      language === "en"
+        ? "You can view more details or apply online using the buttons above."
+        : "يمكنك عرض المزيد من التفاصيل أو التقديم عبر الإنترنت باستخدام الأزرار أعلاه.";
+
+    const richCardContent = `${introText}\n\n<rich-card>${JSON.stringify(richCardData)}</rich-card>\n\n${outroText}`;
+
+    return {
+      content: richCardContent,
+      metadata: {
+        confidenceLevel: "high",
+        source:
+          "Federal Authority for Identity, Citizenship, Customs & Port Security",
+        lastUpdated: "2023-12-01",
+        quickReplies: [
+          {
+            id: "more-details",
+            text: language === "en" ? "More details" : "المزيد من التفاصيل",
+          },
+          {
+            id: "requirements",
+            text: language === "en" ? "Requirements" : "المتطلبات",
+          },
+          {
+            id: "apply",
+            text: language === "en" ? "How to apply" : "كيفية التقديم",
+          },
+        ],
       },
     };
   }
-
-  // Create a rich card response
-  const richCardData = {
-    type: "service",
-    data: service,
-  };
-
-  const introText =
-    language === "en"
-      ? `Here's information about the ${service.title}:`
-      : `إليك معلومات حول ${service.title}:`;
-
-  const outroText =
-    language === "en"
-      ? "You can view more details or apply online using the buttons above."
-      : "يمكنك عرض المزيد من التفاصيل أو التقديم عبر الإنترنت باستخدام الأزرار أعلاه.";
-
-  const richCardContent = `${introText}\n\n<rich-card>${JSON.stringify(richCardData)}</rich-card>\n\n${outroText}`;
-
-  return {
-    content: richCardContent,
-    metadata: {
-      confidenceLevel: "high",
-      source:
-        "Federal Authority for Identity, Citizenship, Customs & Port Security",
-      lastUpdated: "2023-12-01",
-      quickReplies: [
-        {
-          id: "more-details",
-          text: language === "en" ? "More details" : "المزيد من التفاصيل",
-        },
-        {
-          id: "requirements",
-          text: language === "en" ? "Requirements" : "المتطلبات",
-        },
-        {
-          id: "apply",
-          text: language === "en" ? "How to apply" : "كيفية التقديم",
-        },
-      ],
-    },
-  };
 }
 
 /**
@@ -619,7 +688,10 @@ export async function processDocumentWithAI(
 /**
  * Determine document type based on filename and content
  */
-function determineDocumentType(fileName: string, content: string): string {
+export function determineDocumentType(
+  fileName: string,
+  content: string,
+): string {
   const lowercaseFileName = fileName.toLowerCase();
   const lowercaseContent = content.toLowerCase();
 

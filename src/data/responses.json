@@ -321,9 +321,9 @@
         "Emirates ID or driving license"
       ],
       "fees": {
-        "Varies by violation type",
-        "Black points may apply",
-        "Discounts available during certain periods (up to 50%)"
+        "Standard fines": "Varies by violation type",
+        "Additional penalties": "Black points may apply",
+        "Discount options": "Discounts available during certain periods (up to 50%)"
       },
       "processingTime": "Immediate for online payments",
       "steps": [

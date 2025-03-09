@@ -202,7 +202,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     setLanguage(newLanguage);
   };
 
-  // Use only AI model for search without any predefined categories or limitations
+  // Use Gemini AI with Mistral/Mixtral and Groq as fallbacks
   const generateResponse = async (
     query: string,
   ): Promise<{ content: string; metadata?: any }> => {
@@ -210,21 +210,49 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     const langCode = language === "English" ? "en" : "ar";
 
     try {
-      // Use OpenAI service directly for all queries
+      // Use Gemini AI as primary service
       try {
-        const { generateOpenAIResponse } = await import(
-          "../services/openaiService"
+        const { generateGeminiResponse } = await import(
+          "../services/geminiService"
         );
-        return await generateOpenAIResponse(query, langCode);
-      } catch (openaiError) {
+        return await generateGeminiResponse(query, langCode);
+      } catch (geminiError) {
         console.warn(
-          "OpenAI service unavailable, falling back to mock AI:",
-          openaiError,
+          "Gemini service unavailable, falling back to Mistral/Mixtral:",
+          geminiError,
         );
 
-        // Fall back to mock AI service
-        const { generateAIResponse } = await import("../services/aiService");
-        return await generateAIResponse(query, langCode);
+        // Fall back to Mistral/Mixtral
+        try {
+          const { generateMistralResponse } = await import(
+            "../services/mistralService"
+          );
+          return await generateMistralResponse(query, langCode);
+        } catch (mistralError) {
+          console.warn(
+            "Mistral service unavailable, falling back to Groq:",
+            mistralError,
+          );
+
+          // Fall back to Groq
+          try {
+            const { generateGroqResponse } = await import(
+              "../services/groqService"
+            );
+            return await generateGroqResponse(query, langCode);
+          } catch (groqError) {
+            console.warn(
+              "Groq service unavailable, falling back to mock AI:",
+              groqError,
+            );
+
+            // Final fallback to mock AI service
+            const { generateAIResponse } = await import(
+              "../services/aiService"
+            );
+            return await generateAIResponse(query, langCode);
+          }
+        }
       }
     } catch (error) {
       console.error("Error generating AI response:", error);
@@ -341,7 +369,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     }
   };
 
-  // Handle file uploads with OpenAI processing directly
+  // Handle file uploads with Gemini AI and fallbacks
   const handleFileUpload = async (file: File) => {
     // Add a user message indicating file upload
     const userMessage: Message = {
@@ -374,28 +402,60 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       // Process the file
       const result = await processFile(file);
 
-      // Use OpenAI service directly for document processing
+      // Use Gemini AI with fallbacks for document processing
       let aiResponse;
       try {
-        const { processDocumentWithOpenAI } = await import(
-          "../services/openaiService"
+        const { processDocumentWithGemini } = await import(
+          "../services/geminiService"
         );
-        aiResponse = await processDocumentWithOpenAI(
+        aiResponse = await processDocumentWithGemini(
           result,
           language === "English" ? "en" : "ar",
         );
-      } catch (openaiError) {
+      } catch (geminiError) {
         console.warn(
-          "OpenAI document processing unavailable, falling back to mock processing:",
-          openaiError,
+          "Gemini document processing unavailable, falling back to Mistral/Mixtral:",
+          geminiError,
         );
 
-        // Fall back to mock document processing
-        const { processDocumentWithAI } = await import("../services/aiService");
-        aiResponse = await processDocumentWithAI(
-          result,
-          language === "English" ? "en" : "ar",
-        );
+        try {
+          const { processDocumentWithMistral } = await import(
+            "../services/mistralService"
+          );
+          aiResponse = await processDocumentWithMistral(
+            result,
+            language === "English" ? "en" : "ar",
+          );
+        } catch (mistralError) {
+          console.warn(
+            "Mistral document processing unavailable, falling back to Groq:",
+            mistralError,
+          );
+
+          try {
+            const { processDocumentWithGroq } = await import(
+              "../services/groqService"
+            );
+            aiResponse = await processDocumentWithGroq(
+              result,
+              language === "English" ? "en" : "ar",
+            );
+          } catch (groqError) {
+            console.warn(
+              "Groq document processing unavailable, falling back to mock processing:",
+              groqError,
+            );
+
+            // Final fallback to mock document processing
+            const { processDocumentWithAI } = await import(
+              "../services/aiService"
+            );
+            aiResponse = await processDocumentWithAI(
+              result,
+              language === "English" ? "en" : "ar",
+            );
+          }
+        }
       }
 
       // Replace the processing message with the AI response

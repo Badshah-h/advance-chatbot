@@ -255,6 +255,65 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     }
   };
 
+  // Add a function to handle search-specific queries
+  const handleSearchQuery = async (query: string) => {
+    // Add user message
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: query,
+      sender: "user",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+
+    // Show searching indicator
+    const searchingId = (Date.now() + 1).toString();
+    const searchingIndicator: Message = {
+      id: searchingId,
+      content:
+        language === "English"
+          ? "Searching UAE government sources..."
+          : "جاري البحث في مصادر حكومة الإمارات...",
+      sender: "ai",
+      timestamp: new Date(),
+      metadata: {
+        isTypingIndicator: true,
+      },
+    };
+
+    setMessages((prev) => [...prev, searchingIndicator]);
+
+    try {
+      // Use the web search service directly
+      const { searchGovernmentWebsites } = await import(
+        "../services/webSearchService"
+      );
+      const response = await searchGovernmentWebsites(
+        query,
+        language === "English" ? "en" : "ar",
+      );
+
+      // Replace searching indicator with actual response
+      const aiMessage: Message = {
+        id: (Date.now() + 2).toString(),
+        content: response.content,
+        sender: "ai",
+        timestamp: new Date(),
+        metadata: response.metadata,
+      };
+
+      setMessages((prev) =>
+        prev.filter((msg) => msg.id !== searchingId).concat(aiMessage),
+      );
+    } catch (error) {
+      console.error("Error in web search:", error);
+
+      // Fall back to regular response generation
+      handleSendMessage(query);
+    }
+  };
+
   const handleAuthSuccess = () => {
     // Refresh the interface after successful authentication
     console.log("Authentication successful");
@@ -332,6 +391,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         timestamp: new Date(),
       };
       setMessages([newMessage]);
+    } else if (
+      reply.id.includes("visa") ||
+      reply.id.includes("id") ||
+      reply.id.includes("business") ||
+      reply.id.includes("traffic") ||
+      reply.id.includes("health") ||
+      reply.id.includes("education")
+    ) {
+      // For service-specific quick replies, use the search function
+      handleSearchQuery(reply.text);
     } else {
       // For other quick replies, send as a user message
       handleSendMessage(reply.text);
@@ -489,6 +558,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         onSendMessage={handleSendMessageWithAuth}
         onVoiceInput={handleVoiceInput}
         onFileUpload={handleFileUpload}
+        onSearchQuery={handleSearchQuery}
         isRecording={isRecording}
         placeholder={
           language === "English"

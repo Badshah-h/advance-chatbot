@@ -84,13 +84,6 @@ export async function searchUAEGovernmentSources(
   language: "en" | "ar" = "en",
 ): Promise<AIResponse> {
   try {
-    // In a real implementation, this would search across UAE government websites
-    // For now, we'll simulate the search with a delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // This would be replaced with actual search API calls in production
-    // For example, using a custom search engine or web scraping with proper permissions
-
     // Determine if this is a general query about UAE
     const isGeneralUAEQuery =
       /\b(uae|emirates|dubai|abu dhabi|sharjah)\b/i.test(query) &&
@@ -102,50 +95,88 @@ export async function searchUAEGovernmentSources(
         query,
       );
 
-    let content = "";
-    let confidenceLevel: "high" | "medium" | "low" = "medium";
-    let source = "";
-    let lastUpdated = new Date().toISOString().split("T")[0];
+    // Check if this is a service-specific query
+    const isServiceQuery =
+      /\b(visa|passport|id|license|business|traffic|fine|health|education|tax|customs|immigration|residence|citizenship|marriage|birth|death|certificate)\b/i.test(
+        query,
+      );
 
     if (isGeneralGreeting) {
       // Handle general greetings
-      content =
+      const content =
         language === "en"
           ? `Hello! I'm the Al Yalayis Government Services assistant. I can help you with information about UAE government services, answer general questions about the UAE, or assist with specific service inquiries. How may I assist you today?`
           : `مرحبًا! أنا مساعد خدمات حكومة اليلايس. يمكنني مساعدتك بمعلومات حول الخدمات الحكومية في الإمارات، والإجابة على الأسئلة العامة حول الإمارات، أو المساعدة في استفسارات خدمة محددة. كيف يمكنني مساعدتك اليوم؟`;
 
-      confidenceLevel = "high";
-      source = "Al Yalayis Government Services";
+      return {
+        content,
+        metadata: {
+          confidenceLevel: "high",
+          source: "Al Yalayis Government Services",
+          lastUpdated: new Date().toISOString().split("T")[0],
+          quickReplies: [
+            {
+              id: "visa",
+              text: language === "en" ? "Visa Services" : "خدمات التأشيرة",
+            },
+            {
+              id: "id",
+              text: language === "en" ? "Emirates ID" : "الهوية الإماراتية",
+            },
+            {
+              id: "business",
+              text: language === "en" ? "Business Licensing" : "تراخيص الأعمال",
+            },
+            {
+              id: "traffic",
+              text: language === "en" ? "Traffic Services" : "خدمات المرور",
+            },
+          ],
+        },
+      };
     } else if (isGeneralUAEQuery) {
       // Handle general UAE information queries
-      // In a real implementation, this would fetch from authoritative sources
-      content =
+      const content =
         language === "en"
           ? `The United Arab Emirates (UAE) is a federation of seven emirates on the eastern side of the Arabian peninsula. It's known for its modern cities, luxury shopping, and innovative architecture. The UAE has a rich cultural heritage and has rapidly developed into a global business hub and tourist destination. For more specific information about the UAE, please let me know what you'd like to learn about.`
           : `الإمارات العربية المتحدة هي اتحاد من سبع إمارات على الجانب الشرقي من شبه الجزيرة العربية. تشتهر بمدنها الحديثة والتسوق الفاخر والهندسة المعمارية المبتكرة. تتمتع الإمارات العربية المتحدة بتراث ثقافي غني وقد تطورت بسرعة لتصبح مركزًا عالميًا للأعمال ووجهة سياحية. لمزيد من المعلومات المحددة حول الإمارات العربية المتحدة، يرجى إخباري بما ترغب في معرفته.`;
 
-      confidenceLevel = "high";
-      source = "UAE Government Portal";
+      return {
+        content,
+        metadata: {
+          confidenceLevel: "high",
+          source: "UAE Government Portal",
+          lastUpdated: new Date().toISOString().split("T")[0],
+          quickReplies: [
+            {
+              id: "tourism",
+              text:
+                language === "en" ? "Tourism Information" : "معلومات سياحية",
+            },
+            {
+              id: "culture",
+              text: language === "en" ? "UAE Culture" : "ثقافة الإمارات",
+            },
+            {
+              id: "economy",
+              text: language === "en" ? "UAE Economy" : "اقتصاد الإمارات",
+            },
+            {
+              id: "government",
+              text: language === "en" ? "Government Structure" : "هيكل الحكومة",
+            },
+          ],
+        },
+      };
+    } else if (isServiceQuery) {
+      // For service-specific queries, use the new web search service
+      const { searchGovernmentWebsites } = await import("./webSearchService");
+      return await searchGovernmentWebsites(query, language);
     } else {
-      // For other queries, we would search across government sources
-      // For now, fall back to the AI service
+      // For other queries, fall back to the AI service
       const { generateAIResponse } = await import("./aiService");
       return await generateAIResponse(query, language);
     }
-
-    // Generate appropriate quick replies
-    const { generateContextualQuickReplies } = await import("./aiService");
-    const quickReplies = generateContextualQuickReplies(query, language);
-
-    return {
-      content,
-      metadata: {
-        confidenceLevel,
-        source,
-        lastUpdated,
-        quickReplies,
-      },
-    };
   } catch (error) {
     console.error("Error in searchUAEGovernmentSources:", error);
 

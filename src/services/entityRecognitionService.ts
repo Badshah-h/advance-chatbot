@@ -1207,5 +1207,4 @@ function determineIntents(query: string, entities: RecognizedEntity[], intents: 
     { action: 'have a good finish', intent: 'FAREWELL', confidence: 0.9 },
     { action: 'have a good complete', intent: 'FAREWELL', confidence: 0.9 },
     { action: 'have a good conclude', intent: 'FAREWELL', confidence: 0.9 },
-    { action: 'have a good close', intent: 'FAREWELL', confidence: 0.9 },
-', intent: 'FAREWELL', confidence: 0.9 }
+    { action: 'have a good close', intent: 'FAREWELL', confidence: 0.9 }

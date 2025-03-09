@@ -65,6 +65,10 @@ const ChatMessages = ({
     comment: string;
     helpful: boolean;
     messageId: string;
+    categories?: string[];
+    improvement?: string;
+    contactConsent?: boolean;
+    contactEmail?: string;
   }) => {
     try {
       // Send the detailed feedback to the backend
@@ -76,6 +80,9 @@ const ChatMessages = ({
 
       if (error) {
         console.error("Error submitting feedback:", error);
+      } else {
+        // Show success toast or notification
+        console.log("Feedback submitted successfully");
       }
 
       // Update the thumbs up/down state if it changed

@@ -3,14 +3,10 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
-import { Button } from "./ui/button";
-import { Textarea } from "./ui/textarea";
-import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-import { Label } from "./ui/label";
+import DetailedFeedbackForm from "./DetailedFeedbackForm";
 
 interface FeedbackDialogProps {
   isOpen: boolean;
@@ -20,6 +16,10 @@ interface FeedbackDialogProps {
     comment: string;
     helpful: boolean;
     messageId: string;
+    categories?: string[];
+    improvement?: string;
+    contactConsent?: boolean;
+    contactEmail?: string;
   }) => void;
   messageId: string;
   initialHelpful?: boolean;
@@ -34,16 +34,23 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
   initialHelpful = true,
   language = "en",
 }) => {
-  const [rating, setRating] = useState<number>(initialHelpful ? 4 : 2);
-  const [comment, setComment] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = (feedbackData: {
+    rating: number;
+    comment: string;
+    helpful: boolean;
+    categories: string[];
+    improvement: string;
+    contactConsent: boolean;
+    contactEmail?: string;
+  }) => {
+    setIsLoading(true);
     onSubmit({
-      rating,
-      comment,
-      helpful: rating >= 3,
+      ...feedbackData,
       messageId,
     });
+    setIsLoading(false);
     onClose();
   };
 
@@ -51,7 +58,7 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={isArabic ? "rtl" : "ltr"}>
+      <DialogContent className={isArabic ? "rtl" : "ltr"} size="lg">
         <DialogHeader>
           <DialogTitle>
             {isArabic ? "تقديم ملاحظات" : "Provide Feedback"}
@@ -63,76 +70,13 @@ const FeedbackDialog: React.FC<FeedbackDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4 space-y-4">
-          <RadioGroup
-            defaultValue={rating.toString()}
-            onValueChange={(value) => setRating(parseInt(value))}
-            className="flex flex-col space-y-2"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="5" id="r5" />
-              <Label htmlFor="r5">
-                {isArabic ? "ممتاز - مفيد للغاية" : "Excellent - Very helpful"}
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="4" id="r4" />
-              <Label htmlFor="r4">
-                {isArabic ? "جيد - مفيد" : "Good - Helpful"}
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="3" id="r3" />
-              <Label htmlFor="r3">
-                {isArabic
-                  ? "متوسط - مفيد جزئيًا"
-                  : "Average - Somewhat helpful"}
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="2" id="r2" />
-              <Label htmlFor="r2">
-                {isArabic ? "ضعيف - غير مفيد" : "Poor - Not helpful"}
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="1" id="r1" />
-              <Label htmlFor="r1">
-                {isArabic
-                  ? "سيء جدًا - غير دقيق أو مضلل"
-                  : "Very poor - Inaccurate or misleading"}
-              </Label>
-            </div>
-          </RadioGroup>
-
-          <div className="space-y-2">
-            <Label htmlFor="comment">
-              {isArabic
-                ? "تعليقات إضافية (اختياري)"
-                : "Additional comments (optional)"}
-            </Label>
-            <Textarea
-              id="comment"
-              placeholder={
-                isArabic
-                  ? "أخبرنا بالمزيد عن تجربتك..."
-                  : "Tell us more about your experience..."
-              }
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              className="min-h-[100px]"
-            />
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            {isArabic ? "إلغاء" : "Cancel"}
-          </Button>
-          <Button onClick={handleSubmit}>
-            {isArabic ? "إرسال" : "Submit"}
-          </Button>
-        </DialogFooter>
+        <DetailedFeedbackForm
+          onSubmit={handleSubmit}
+          onCancel={onClose}
+          initialRating={initialHelpful ? 4 : 2}
+          isLoading={isLoading}
+          language={language}
+        />
       </DialogContent>
     </Dialog>
   );

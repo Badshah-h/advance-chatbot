@@ -128,6 +128,10 @@ export async function submitFeedback(feedback: {
   comment: string;
   helpful: boolean;
   userId: string;
+  categories?: string[];
+  improvement?: string;
+  contactConsent?: boolean;
+  contactEmail?: string;
 }): Promise<ApiResponse<null>> {
   try {
     // Check if Supabase is properly configured
@@ -145,6 +149,10 @@ export async function submitFeedback(feedback: {
           comment: feedback.comment,
           helpful: feedback.helpful,
           user_id: feedback.userId,
+          categories: feedback.categories || [],
+          improvement: feedback.improvement || "",
+          contact_consent: feedback.contactConsent || false,
+          contact_email: feedback.contactEmail || null,
           created_at: new Date(),
         },
       ]);

@@ -212,10 +212,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     try {
       // First, check if this is a query about UAE government services
       try {
-        const { searchUAEGovernmentSources } = await import(
+        const { searchGovernmentServices } = await import(
           "../services/uaeGovServices"
         );
-        return await searchUAEGovernmentSources(query, langCode);
+        return await searchGovernmentServices(query, langCode);
       } catch (govError) {
         console.warn(
           "UAE Government search unavailable, trying OpenAI:",
@@ -285,11 +285,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     setMessages((prev) => [...prev, searchingIndicator]);
 
     try {
-      // Use the web search service directly
-      const { searchGovernmentWebsites } = await import(
-        "../services/webSearchService"
+      // Use the government services search directly
+      const { searchGovernmentServices } = await import(
+        "../services/uaeGovServices"
       );
-      const response = await searchGovernmentWebsites(
+      const response = await searchGovernmentServices(
         query,
         language === "English" ? "en" : "ar",
       );

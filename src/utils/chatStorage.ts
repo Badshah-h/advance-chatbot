@@ -114,3 +114,37 @@ export function loadLanguagePreference(): "en" | "ar" {
     return "en";
   }
 }
+
+// Search within chat history
+export function searchChatHistory(
+  query: string,
+  userId: string = "guest",
+): Message[] {
+  try {
+    const chatHistory = loadChatHistory(userId) || [];
+    const normalizedQuery = query.toLowerCase();
+
+    return chatHistory.filter((message) =>
+      message.content.toLowerCase().includes(normalizedQuery),
+    );
+  } catch (error) {
+    console.error("Error searching chat history:", error);
+    return [];
+  }
+}
+
+// Add a message to the chat history
+export function addMessageToChatHistory(
+  message: Message,
+  userId: string = "guest",
+): Message[] {
+  try {
+    const chatHistory = loadChatHistory(userId) || [];
+    const updatedHistory = [...chatHistory, message];
+    saveChatHistory(updatedHistory, userId);
+    return updatedHistory;
+  } catch (error) {
+    console.error("Error adding message to chat history:", error);
+    return [];
+  }
+}

@@ -40,3 +40,43 @@ export interface Message {
     isTypingIndicator?: boolean;
   };
 }
+
+export interface AIResponse {
+  content: string;
+  metadata?: {
+    confidenceLevel?: "high" | "medium" | "low";
+    source?: string;
+    lastUpdated?: string;
+    quickReplies?: Array<{ id: string; text: string }>;
+    entities?: any[];
+    intents?: any[];
+    [key: string]: any;
+  };
+}
+
+export interface GovernmentService {
+  id: string;
+  title: string;
+  description: string;
+  authority: string;
+  authorityCode: string;
+  category: string;
+  subcategory?: string;
+  eligibility?: string[];
+  requiredDocuments?: string[];
+  fees?: {
+    amount: number;
+    currency: string;
+    description: string;
+  }[];
+  processingTime?: string;
+  steps?: string[];
+  url: string;
+  contactInfo?: {
+    phone?: string;
+    email?: string;
+    website?: string;
+  };
+  lastUpdated: string;
+  language: "en" | "ar";
+}

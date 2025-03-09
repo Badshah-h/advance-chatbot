@@ -253,7 +253,81 @@ async function generateRichCardResponse(
   language: "en" | "ar",
 ): Promise<AIResponse> {
   try {
-    // Try to get service info from the API first
+    // First try to get service info from UAE Government sources
+    try {
+      const { fetchServiceInfo, formatServiceResponse } = await import(
+        "./uaeGovServices"
+      );
+      const govServiceData = await fetchServiceInfo(serviceId, language);
+
+      if (govServiceData) {
+        // Create a rich card response with real government data
+        const richCardData = {
+          type: "service",
+          data: {
+            id: govServiceData.referenceNumber,
+            title: govServiceData.serviceName,
+            description: govServiceData.description,
+            category: serviceId.split("-")[0],
+            image: `https://images.unsplash.com/photo-1576413326475-ea6c788332fb?w=600&q=80`,
+            fee: Object.values(govServiceData.fees)[0] || "Varies",
+            processingTime: govServiceData.processingTime,
+            eligibility: govServiceData.eligibilityCriteria,
+            requiredDocuments: govServiceData.requiredDocuments,
+            applicationSteps: govServiceData.applicationSteps,
+            applicationUrl: govServiceData.serviceUrl || "#",
+            status: "active",
+            source: govServiceData.source,
+            lastUpdated: govServiceData.lastUpdated,
+            ministry: govServiceData.ministry,
+          },
+        };
+
+        const introText =
+          language === "en"
+            ? `Here's information about the ${govServiceData.serviceName}:`
+            : `إليك معلومات حول ${govServiceData.serviceName}:`;
+
+        const outroText =
+          language === "en"
+            ? "You can view more details or apply online using the buttons above."
+            : "يمكنك عرض المزيد من التفاصيل أو التقديم عبر الإنترنت باستخدام الأزرار أعلاه.";
+
+        const richCardContent = `${introText}\n\n<rich-card>${JSON.stringify(richCardData)}</rich-card>\n\n${outroText}`;
+
+        return {
+          content: richCardContent,
+          metadata: {
+            confidenceLevel: "high",
+            source: govServiceData.source,
+            lastUpdated: govServiceData.lastUpdated,
+            quickReplies: [
+              {
+                id: "more-details",
+                text: language === "en" ? "More details" : "المزيد من التفاصيل",
+              },
+              {
+                id: "requirements",
+                text: language === "en" ? "Requirements" : "المتطلبات",
+              },
+              {
+                id: "apply",
+                text: language === "en" ? "How to apply" : "كيفية التقديم",
+              },
+              {
+                id: "related-services",
+                text:
+                  language === "en" ? "Related Services" : "الخدمات ذات الصلة",
+              },
+            ],
+          },
+        };
+      }
+    } catch (govError) {
+      console.warn("Error fetching from UAE Government sources:", govError);
+    }
+
+    // If UAE Government sources fail, try the API
     const { getServiceInfo } = await import("./apiService");
     const { data: service, error } = await getServiceInfo(serviceId);
 
@@ -297,9 +371,8 @@ async function generateRichCardResponse(
       content: richCardContent,
       metadata: {
         confidenceLevel: "high",
-        source:
-          "Federal Authority for Identity, Citizenship, Customs & Port Security",
-        lastUpdated: "2023-12-01",
+        source: "Al Yalayis Government Services",
+        lastUpdated: service?.lastUpdated || "2023-12-01",
         quickReplies: [
           {
             id: "more-details",
@@ -354,8 +427,7 @@ async function generateRichCardResponse(
       content: richCardContent,
       metadata: {
         confidenceLevel: "high",
-        source:
-          "Federal Authority for Identity, Citizenship, Customs & Port Security",
+        source: "Al Yalayis Government Services",
         lastUpdated: "2023-12-01",
         quickReplies: [
           {

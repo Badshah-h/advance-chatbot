@@ -38,11 +38,12 @@ const Home: React.FC = () => {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              AI-Powered Government Services Assistant
+              Al Yalayis - UAE Government Services Assistant
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               Get instant, accurate information about UAE government services in
-              both Arabic and English.
+              both Arabic and English, powered by real-time data from official
+              sources.
             </p>
           </div>
 
@@ -81,7 +82,7 @@ const Home: React.FC = () => {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center">
           <div className="mb-4 sm:mb-0">
             <p className="text-sm text-gray-500">
-              © 2023 Al Yalayis Government Services. All rights reserved.
+              © 2024 Al Yalayis Government Services. All rights reserved.
             </p>
           </div>
           <div className="flex space-x-6">

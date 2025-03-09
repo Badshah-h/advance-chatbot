@@ -210,21 +210,34 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     const langCode = language === "English" ? "en" : "ar";
 
     try {
-      // Try to use OpenAI service first if available
+      // First, check if this is a query about UAE government services
       try {
-        const { generateOpenAIResponse } = await import(
-          "../services/openaiService"
+        const { searchUAEGovernmentSources } = await import(
+          "../services/uaeGovServices"
         );
-        return await generateOpenAIResponse(query, langCode);
-      } catch (openaiError) {
+        return await searchUAEGovernmentSources(query, langCode);
+      } catch (govError) {
         console.warn(
-          "OpenAI service unavailable, falling back to mock AI:",
-          openaiError,
+          "UAE Government search unavailable, trying OpenAI:",
+          govError,
         );
 
-        // Fall back to mock AI service
-        const { generateAIResponse } = await import("../services/aiService");
-        return await generateAIResponse(query, langCode);
+        // Try to use OpenAI service if government search fails
+        try {
+          const { generateOpenAIResponse } = await import(
+            "../services/openaiService"
+          );
+          return await generateOpenAIResponse(query, langCode);
+        } catch (openaiError) {
+          console.warn(
+            "OpenAI service unavailable, falling back to mock AI:",
+            openaiError,
+          );
+
+          // Fall back to mock AI service
+          const { generateAIResponse } = await import("../services/aiService");
+          return await generateAIResponse(query, langCode);
+        }
       }
     } catch (error) {
       console.error("Error generating AI response:", error);

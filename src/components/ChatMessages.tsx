@@ -6,6 +6,8 @@ import { ScrollArea } from "./ui/scroll-area";
 import QuickReplies from "./QuickReplies";
 import RichCardRenderer from "./RichCardRenderer";
 import FeedbackDialog from "./FeedbackDialog";
+import FAQSection from "./FAQSection";
+import CopyToClipboardButton from "./CopyToClipboardButton";
 import {
   Tooltip,
   TooltipContent,
@@ -143,6 +145,21 @@ const ChatMessages = ({
                             <span key={index}>{part}</span>
                           );
                         })}
+
+                        {/* Render FAQs if present in the message */}
+                        {message.metadata?.faqs &&
+                          message.metadata.faqs.length > 0 && (
+                            <div className="mt-4">
+                              <FAQSection
+                                faqs={message.metadata.faqs}
+                                title={
+                                  message.metadata.faqTitle ||
+                                  "Frequently Asked Questions"
+                                }
+                                language={message.metadata.language || "en"}
+                              />
+                            </div>
+                          )}
                       </div>
                     )}
 
@@ -268,6 +285,14 @@ const ChatMessages = ({
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
+
+                      <CopyToClipboardButton
+                        text={message.content.replace(
+                          /<rich-card>.*?<\/rich-card>/s,
+                          "",
+                        )}
+                        className="p-1 h-7 w-7"
+                      />
                     </div>
                   )}
                 </div>

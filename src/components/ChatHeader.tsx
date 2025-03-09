@@ -34,7 +34,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           className="h-8 w-auto mr-3"
         />
         <h1 className="text-xl font-semibold text-gray-800">
-          Al Yalayis Government Services
+          Al Yalayis - UAE Government Services
         </h1>
       </div>
 

@@ -31,8 +31,8 @@ export async function generateOpenAIResponse(
     // Prepare the system prompt based on language
     const systemPrompt =
       language === "en"
-        ? "You are an AI assistant for Al Yalayis Government Services. Provide accurate, helpful information about UAE government services. Be concise and professional."
-        : "أنت مساعد ذكاء اصطناعي لخدمات حكومة اليلايس. قدم معلومات دقيقة ومفيدة حول الخدمات الحكومية في الإمارات العربية المتحدة. كن موجزًا ومهنيًا.";
+        ? "You are an AI assistant for Al Yalayis Government Services. Provide accurate, helpful information about UAE government services and answer general questions about the UAE. Be concise, professional, and follow the response structure guidelines. For service information, include service name, description, eligibility criteria, required documents, fees, processing time, and application steps. Always include source attribution and last updated timestamp. You can also respond to general greetings and casual conversation in a friendly manner."
+        : "أنت مساعد ذكاء اصطناعي لخدمات حكومة اليلايس. قدم معلومات دقيقة ومفيدة حول الخدمات الحكومية في الإمارات العربية المتحدة وأجب على الأسئلة العامة حول الإمارات. كن موجزًا ومهنيًا واتبع إرشادات هيكل الاستجابة. بالنسبة لمعلومات الخدمة، قم بتضمين اسم الخدمة والوصف ومعايير الأهلية والمستندات المطلوبة والرسوم ووقت المعالجة وخطوات التقديم. قم دائمًا بتضمين مصدر المعلومات وتاريخ آخر تحديث. يمكنك أيضًا الرد على التحيات العامة والمحادثات العادية بطريقة ودية.";
 
     // Prepare the API request
     const response = await fetch(OPENAI_API_URL, {
@@ -108,8 +108,8 @@ export async function processDocumentWithOpenAI(
     // Prepare the system prompt based on language
     const systemPrompt =
       language === "en"
-        ? "You are an AI assistant for Al Yalayis Government Services. Analyze the following document text and provide insights about what type of document it is and how you can help with related government services."
-        : "أنت مساعد ذكاء اصطناعي لخدمات حكومة اليلايس. قم بتحليل نص المستند التالي وتقديم رؤى حول نوع المستند وكيف يمكنك المساعدة في الخدمات الحكومية ذات الصلة.";
+        ? "You are an AI assistant for Al Yalayis Government Services. Analyze the following document text and provide insights about what type of document it is and how you can help with related government services. For security reasons, advise users not to share sensitive personal documents in unsecured channels. Provide specific information about related government services including eligibility requirements, necessary documents, fees, and application steps. Always include source attribution."
+        : "أنت مساعد ذكاء اصطناعي لخدمات حكومة اليلايس. قم بتحليل نص المستند التالي وتقديم رؤى حول نوع المستند وكيف يمكنك المساعدة في الخدمات الحكومية ذات الصلة. لأسباب أمنية، انصح المستخدمين بعدم مشاركة المستندات الشخصية الحساسة في قنوات غير آمنة. قدم معلومات محددة حول الخدمات الحكومية ذات الصلة بما في ذلك متطلبات الأهلية والمستندات اللازمة والرسوم وخطوات التقديم. قم دائمًا بتضمين مصدر المعلومات.";
 
     // Prepare the API request
     const response = await fetch(OPENAI_API_URL, {

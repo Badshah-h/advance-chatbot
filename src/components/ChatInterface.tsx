@@ -202,7 +202,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     setLanguage(newLanguage);
   };
 
-  // Use the real AI service instead of mock responses
+  // Use only AI model for search without any predefined categories or limitations
   const generateResponse = async (
     query: string,
   ): Promise<{ content: string; metadata?: any }> => {
@@ -210,34 +210,21 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     const langCode = language === "English" ? "en" : "ar";
 
     try {
-      // First, check if this is a query about UAE government services
+      // Use OpenAI service directly for all queries
       try {
-        const { searchGovernmentServices } = await import(
-          "../services/uaeGovServices"
+        const { generateOpenAIResponse } = await import(
+          "../services/openaiService"
         );
-        return await searchGovernmentServices(query, langCode);
-      } catch (govError) {
+        return await generateOpenAIResponse(query, langCode);
+      } catch (openaiError) {
         console.warn(
-          "UAE Government search unavailable, trying OpenAI:",
-          govError,
+          "OpenAI service unavailable, falling back to mock AI:",
+          openaiError,
         );
 
-        // Try to use OpenAI service if government search fails
-        try {
-          const { generateOpenAIResponse } = await import(
-            "../services/openaiService"
-          );
-          return await generateOpenAIResponse(query, langCode);
-        } catch (openaiError) {
-          console.warn(
-            "OpenAI service unavailable, falling back to mock AI:",
-            openaiError,
-          );
-
-          // Fall back to mock AI service
-          const { generateAIResponse } = await import("../services/aiService");
-          return await generateAIResponse(query, langCode);
-        }
+        // Fall back to mock AI service
+        const { generateAIResponse } = await import("../services/aiService");
+        return await generateAIResponse(query, langCode);
       }
     } catch (error) {
       console.error("Error generating AI response:", error);
@@ -255,63 +242,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     }
   };
 
-  // Add a function to handle search-specific queries
+  // Handle search queries using the same AI model as regular queries
   const handleSearchQuery = async (query: string) => {
-    // Add user message
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: query,
-      sender: "user",
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-
-    // Show searching indicator
-    const searchingId = (Date.now() + 1).toString();
-    const searchingIndicator: Message = {
-      id: searchingId,
-      content:
-        language === "English"
-          ? "Searching UAE government sources..."
-          : "جاري البحث في مصادر حكومة الإمارات...",
-      sender: "ai",
-      timestamp: new Date(),
-      metadata: {
-        isTypingIndicator: true,
-      },
-    };
-
-    setMessages((prev) => [...prev, searchingIndicator]);
-
-    try {
-      // Use the government services search directly
-      const { searchGovernmentServices } = await import(
-        "../services/uaeGovServices"
-      );
-      const response = await searchGovernmentServices(
-        query,
-        language === "English" ? "en" : "ar",
-      );
-
-      // Replace searching indicator with actual response
-      const aiMessage: Message = {
-        id: (Date.now() + 2).toString(),
-        content: response.content,
-        sender: "ai",
-        timestamp: new Date(),
-        metadata: response.metadata,
-      };
-
-      setMessages((prev) =>
-        prev.filter((msg) => msg.id !== searchingId).concat(aiMessage),
-      );
-    } catch (error) {
-      console.error("Error in web search:", error);
-
-      // Fall back to regular response generation
-      handleSendMessage(query);
-    }
+    // Simply use the regular message handler for all queries
+    handleSendMessage(query);
   };
 
   const handleAuthSuccess = () => {
@@ -407,7 +341,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     }
   };
 
-  // Handle file uploads with real AI processing
+  // Handle file uploads with OpenAI processing directly
   const handleFileUpload = async (file: File) => {
     // Add a user message indicating file upload
     const userMessage: Message = {
@@ -440,7 +374,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       // Process the file
       const result = await processFile(file);
 
-      // Try to use OpenAI service first for document processing
+      // Use OpenAI service directly for document processing
       let aiResponse;
       try {
         const { processDocumentWithOpenAI } = await import(
@@ -538,20 +472,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           onQuickReplyClick={handleQuickReplyClick}
         />
 
-        {showServiceCategories && messages.length <= 1 && (
-          <div className="mt-6 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
-            <h3 className="text-lg font-medium mb-3">
-              {language === "English" ? "Common Services" : "الخدمات الشائعة"}
-            </h3>
-            <ServiceCategoryButtons
-              language={language === "English" ? "en" : "ar"}
-              onSelectCategory={(category) => {
-                setShowServiceCategories(false);
-                handleSendMessage(`Tell me about ${category.name}`);
-              }}
-            />
-          </div>
-        )}
+        {/* Service categories removed to allow unrestricted AI search */}
       </div>
 
       <ChatInputBar

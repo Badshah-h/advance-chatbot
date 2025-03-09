@@ -28,11 +28,11 @@ export async function generateOpenAIResponse(
   }
 
   try {
-    // Prepare the system prompt based on language
+    // Prepare the system prompt based on language - with no limitations or predefined categories
     const systemPrompt =
       language === "en"
-        ? "You are an AI assistant for Al Yalayis Government Services. Provide accurate, helpful information about UAE government services and answer general questions about the UAE. Be concise, professional, and follow the response structure guidelines. For service information, include service name, description, eligibility criteria, required documents, fees, processing time, and application steps. Always include source attribution and last updated timestamp. You can also respond to general greetings and casual conversation in a friendly manner."
-        : "أنت مساعد ذكاء اصطناعي لخدمات حكومة اليلايس. قدم معلومات دقيقة ومفيدة حول الخدمات الحكومية في الإمارات العربية المتحدة وأجب على الأسئلة العامة حول الإمارات. كن موجزًا ومهنيًا واتبع إرشادات هيكل الاستجابة. بالنسبة لمعلومات الخدمة، قم بتضمين اسم الخدمة والوصف ومعايير الأهلية والمستندات المطلوبة والرسوم ووقت المعالجة وخطوات التقديم. قم دائمًا بتضمين مصدر المعلومات وتاريخ آخر تحديث. يمكنك أيضًا الرد على التحيات العامة والمحادثات العادية بطريقة ودية.";
+        ? "You are an AI assistant for Al Yalayis Government Services. Provide accurate, helpful information about any topic the user asks about, with a focus on UAE government services when relevant. Be concise, professional, and helpful. You can respond to any query without limitations or predefined categories. You can also respond to general greetings and casual conversation in a friendly manner."
+        : "أنت مساعد ذكاء اصطناعي لخدمات حكومة اليلايس. قدم معلومات دقيقة ومفيدة حول أي موضوع يسأل عنه المستخدم، مع التركيز على الخدمات الحكومية في الإمارات عندما يكون ذلك مناسبًا. كن موجزًا ومهنيًا ومفيدًا. يمكنك الرد على أي استفسار دون قيود أو فئات محددة مسبقًا. يمكنك أيضًا الرد على التحيات العامة والمحادثات العادية بطريقة ودية.";
 
     // Prepare the API request
     const response = await fetch(OPENAI_API_URL, {
@@ -42,13 +42,13 @@ export async function generateOpenAIResponse(
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-4-turbo",
+        model: "gpt-4-turbo", // Using GPT-4 Turbo model
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: query },
         ],
         temperature: 0.7,
-        max_tokens: 500,
+        max_tokens: 800, // Increased token limit for more comprehensive responses
       }),
     });
 
@@ -61,15 +61,27 @@ export async function generateOpenAIResponse(
     const data = await response.json();
     const content = data.choices[0].message.content;
 
-    // Generate appropriate quick replies based on the query context
-    const { generateContextualQuickReplies } = await import("./aiService");
-    const quickReplies = generateContextualQuickReplies(query, language);
+    // Simple generic quick replies that work for any query
+    const quickReplies = [
+      {
+        id: "more-info",
+        text: language === "en" ? "Tell me more" : "أخبرني المزيد",
+      },
+      {
+        id: "help",
+        text: language === "en" ? "I need help" : "أحتاج للمساعدة",
+      },
+      {
+        id: "thanks",
+        text: language === "en" ? "Thank you" : "شكرا لك",
+      },
+    ];
 
     return {
       content,
       metadata: {
         confidenceLevel: "high",
-        source: "OpenAI GPT-4",
+        source: "OpenAI GPT-4 Turbo", // Updated model name
         lastUpdated: new Date().toISOString().split("T")[0],
         quickReplies,
       },
@@ -84,7 +96,7 @@ export async function generateOpenAIResponse(
 }
 
 /**
- * Process a document using the OpenAI API
+ * Process a document using the OpenAI API without limitations
  */
 export async function processDocumentWithOpenAI(
   fileInfo: {
@@ -105,11 +117,11 @@ export async function processDocumentWithOpenAI(
   }
 
   try {
-    // Prepare the system prompt based on language
+    // Prepare the system prompt based on language - without limitations
     const systemPrompt =
       language === "en"
-        ? "You are an AI assistant for Al Yalayis Government Services. Analyze the following document text and provide insights about what type of document it is and how you can help with related government services. For security reasons, advise users not to share sensitive personal documents in unsecured channels. Provide specific information about related government services including eligibility requirements, necessary documents, fees, and application steps. Always include source attribution."
-        : "أنت مساعد ذكاء اصطناعي لخدمات حكومة اليلايس. قم بتحليل نص المستند التالي وتقديم رؤى حول نوع المستند وكيف يمكنك المساعدة في الخدمات الحكومية ذات الصلة. لأسباب أمنية، انصح المستخدمين بعدم مشاركة المستندات الشخصية الحساسة في قنوات غير آمنة. قدم معلومات محددة حول الخدمات الحكومية ذات الصلة بما في ذلك متطلبات الأهلية والمستندات اللازمة والرسوم وخطوات التقديم. قم دائمًا بتضمين مصدر المعلومات.";
+        ? "You are an AI assistant for Al Yalayis Government Services. Analyze the following document text and provide insights about what type of document it is and how you can help the user with their needs. For security reasons, advise users not to share sensitive personal documents in unsecured channels. Provide helpful information about any topic related to the document without limitations or predefined categories."
+        : "أنت مساعد ذكاء اصطناعي لخدمات حكومة اليلايس. قم بتحليل نص المستند التالي وتقديم رؤى حول نوع المستند وكيف يمكنك مساعدة المستخدم في احتياجاته. لأسباب أمنية، انصح المستخدمين بعدم مشاركة المستندات الشخصية الحساسة في قنوات غير آمنة. قدم معلومات مفيدة حول أي موضوع متعلق بالمستند دون قيود أو فئات محددة مسبقًا.";
 
     // Prepare the API request
     const response = await fetch(OPENAI_API_URL, {
@@ -119,7 +131,7 @@ export async function processDocumentWithOpenAI(
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-4-turbo",
+        model: "gpt-4-turbo", // Using GPT-4 Turbo model
         messages: [
           { role: "system", content: systemPrompt },
           {
@@ -128,7 +140,7 @@ export async function processDocumentWithOpenAI(
           },
         ],
         temperature: 0.5,
-        max_tokens: 800,
+        max_tokens: 1000, // Increased token limit for more comprehensive analysis
       }),
     });
 
@@ -141,65 +153,28 @@ export async function processDocumentWithOpenAI(
     const data = await response.json();
     const content = data.choices[0].message.content;
 
-    // Generate appropriate quick replies based on document type
-    const { determineDocumentType } = await import("./aiService");
-    const documentType = determineDocumentType(
-      fileInfo.fileName,
-      fileInfo.text,
-    );
-
-    // Get quick replies based on document type
-    let quickReplies: Array<{ id: string; text: string }> = [];
-    switch (documentType) {
-      case "emirates-id":
-        quickReplies = [
-          {
-            id: "renew-id",
-            text:
-              language === "en"
-                ? "Renew Emirates ID"
-                : "تجديد الهوية الإماراتية",
-          },
-          {
-            id: "replace-id",
-            text:
-              language === "en" ? "Replace Lost ID" : "استبدال الهوية المفقودة",
-          },
-        ];
-        break;
-      case "visa":
-        quickReplies = [
-          {
-            id: "visa-validity",
-            text:
-              language === "en"
-                ? "Check Visa Validity"
-                : "التحقق من صلاحية التأشيرة",
-          },
-          {
-            id: "extend-visa",
-            text: language === "en" ? "Extend Visa" : "تمديد التأشيرة",
-          },
-        ];
-        break;
-      default:
-        quickReplies = [
-          {
-            id: "more-info",
-            text: language === "en" ? "Tell me more" : "أخبرني المزيد",
-          },
-          {
-            id: "help",
-            text: language === "en" ? "I need help" : "أحتاج للمساعدة",
-          },
-        ];
-    }
+    // Generic quick replies that work for any document type
+    const quickReplies = [
+      {
+        id: "more-info",
+        text: language === "en" ? "Tell me more" : "أخبرني المزيد",
+      },
+      {
+        id: "help",
+        text:
+          language === "en" ? "I need help with this" : "أحتاج للمساعدة بهذا",
+      },
+      {
+        id: "thanks",
+        text: language === "en" ? "Thank you" : "شكرا لك",
+      },
+    ];
 
     return {
       content,
       metadata: {
         confidenceLevel: "high",
-        source: "OpenAI GPT-4",
+        source: "OpenAI GPT-4 Turbo", // Updated model name
         lastUpdated: new Date().toISOString().split("T")[0],
         fileInfo: {
           fileName: fileInfo.fileName,

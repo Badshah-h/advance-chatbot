@@ -1,188 +1,204 @@
 import React, { useState } from "react";
 import { Button } from "../ui/button";
-import { Search } from "lucide-react";
+import { Input } from "../ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Loader2, Search } from "lucide-react";
+import { searchWeb } from "../../services/webSearchService";
+import { AIResponse } from "../../services/aiService";
+import RichCardRenderer from "../RichCardRenderer";
 
 const WebSearchStoryboard = () => {
   const [query, setQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<any[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [response, setResponse] = useState<AIResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [language, setLanguage] = useState<"en" | "ar">("en");
 
   const handleSearch = async () => {
     if (!query.trim()) return;
 
-    setIsSearching(true);
-    setError(null);
-
+    setLoading(true);
     try {
-      // Simulate search results
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Generate mock results based on the query
-      const mockResults = [];
-
-      if (query.toLowerCase().includes("visa")) {
-        mockResults.push({
-          title: "Tourist Visa Services",
-          snippet:
-            "Apply for a new visa, renew or cancel existing visas through our online portal.",
-          url: "https://icp.gov.ae/en/services/",
-          source:
-            "Federal Authority for Identity, Citizenship, Customs and Port Security",
-        });
-        mockResults.push({
-          title: "Golden Visa Program",
-          snippet:
-            "Long-term residence visas for investors, entrepreneurs, and specialized talents.",
-          url: "https://icp.gov.ae/en/services/",
-          source:
-            "Federal Authority for Identity, Citizenship, Customs and Port Security",
-        });
-      } else if (query.toLowerCase().includes("emirates id")) {
-        mockResults.push({
-          title: "Emirates ID Services",
-          snippet:
-            "Apply for a new Emirates ID card, renew or replace lost/damaged cards.",
-          url: "https://icp.gov.ae/en/services/",
-          source:
-            "Federal Authority for Identity, Citizenship, Customs and Port Security",
-        });
-      } else if (query.toLowerCase().includes("business")) {
-        mockResults.push({
-          title: "Business Licensing Services",
-          snippet:
-            "Apply for new business licenses, renew or amend existing licenses.",
-          url: "https://www.moec.gov.ae/en/home",
-          source: "Ministry of Economy",
-        });
-      } else if (query.toLowerCase().includes("traffic")) {
-        mockResults.push({
-          title: "Traffic Services",
-          snippet:
-            "Pay traffic fines, check fine details and get clearance certificates.",
-          url: "https://www.moi.gov.ae/en/eservices.aspx",
-          source: "Ministry of Interior",
-        });
-      } else {
-        // Generic results
-        mockResults.push({
-          title: "UAE Government Services",
-          snippet: `Find information and services related to ${query} from official UAE government sources.`,
-          url: "https://u.ae/en",
-          source: "UAE Government Portal",
-        });
-      }
-
-      setSearchResults(mockResults);
-    } catch (err) {
-      setError("An error occurred while searching. Please try again.");
-      console.error("Search error:", err);
+      const searchResponse = await searchWeb(query, language);
+      setResponse(searchResponse);
+    } catch (error) {
+      console.error("Error searching the web:", error);
+      setResponse({
+        content:
+          language === "en"
+            ? "Sorry, I encountered an error while searching. Please try again."
+            : "عذرًا، واجهت خطأ أثناء البحث. يرجى المحاولة مرة أخرى.",
+        metadata: {
+          confidenceLevel: "low",
+        },
+      });
     } finally {
-      setIsSearching(false);
+      setLoading(false);
     }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  const handleQuickReplyClick = (reply: { id: string; text: string }) => {
+    setQuery(reply.text);
+    handleSearch();
   };
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold mb-6">
-        UAE Government Services Search
-      </h1>
+      <h1 className="text-2xl font-bold mb-6">Web Search Demo</h1>
 
-      <div className="mb-8 bg-white p-6 rounded-lg shadow-md">
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <input
-              type="text"
+      <div className="mb-6 bg-white p-6 rounded-lg shadow-md">
+        <div className="flex items-center space-x-2 mb-4">
+          <div className="flex-1">
+            <Input
+              placeholder={
+                language === "en" ? "Search the web..." : "ابحث في الويب..."
+              }
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search for UAE government services..."
-              className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              onKeyDown={handleKeyDown}
+              className="w-full"
+              dir={language === "ar" ? "rtl" : "ltr"}
             />
           </div>
-          <Button
-            onClick={handleSearch}
-            disabled={isSearching || !query.trim()}
-            className="flex-shrink-0"
-          >
-            <Search className="h-5 w-5 mr-2" />
-            Search
+          <Button onClick={handleSearch} disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {language === "en" ? "Searching..." : "جاري البحث..."}
+              </>
+            ) : (
+              <>
+                <Search className="mr-2 h-4 w-4" />
+                {language === "en" ? "Search" : "بحث"}
+              </>
+            )}
           </Button>
-        </div>
-
-        <div className="mt-2 text-xs text-blue-600">
-          Try searching for: "tourist visa", "emirates id renewal", "business
-          license", "traffic fines"
+          <div className="flex items-center space-x-2">
+            <Button
+              variant={language === "en" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setLanguage("en")}
+            >
+              English
+            </Button>
+            <Button
+              variant={language === "ar" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setLanguage("ar")}
+            >
+              العربية
+            </Button>
+          </div>
         </div>
       </div>
 
-      {isSearching && (
-        <div className="flex justify-center items-center py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-          <span className="ml-3 text-gray-600">
-            Searching across UAE government sources...
-          </span>
-        </div>
-      )}
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {language === "en" ? "Search Results" : "نتائج البحث"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {response ? (
+              <div
+                className="space-y-4"
+                dir={language === "ar" ? "rtl" : "ltr"}
+              >
+                <RichCardRenderer
+                  content={response.content}
+                  metadata={response.metadata}
+                  onActionClick={() => {}}
+                  onQuickReplyClick={handleQuickReplyClick}
+                />
+              </div>
+            ) : (
+              <div
+                className="text-center p-8 text-gray-500"
+                dir={language === "ar" ? "rtl" : "ltr"}
+              >
+                {loading
+                  ? language === "en"
+                    ? "Searching..."
+                    : "جاري البحث..."
+                  : language === "en"
+                    ? "Enter a search term to find information."
+                    : "أدخل مصطلح البحث للعثور على المعلومات."}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-md mb-6">
-          <h3 className="font-semibold">Error</h3>
-          <p>{error}</p>
-        </div>
-      )}
+      <div className="mt-6 bg-white p-6 rounded-lg shadow-md">
+        <h2 className="text-xl font-semibold mb-4">
+          {language === "en" ? "How It Works" : "كيف يعمل"}
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">
+                {language === "en" ? "1. Web Search" : "١. البحث في الويب"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p
+                className="text-sm text-gray-600"
+                dir={language === "ar" ? "rtl" : "ltr"}
+              >
+                {language === "en"
+                  ? "The system searches the web for relevant information about your query."
+                  : "يبحث النظام في الويب عن معلومات ذات صلة بطلب البحث الخاص بك."}
+              </p>
+            </CardContent>
+          </Card>
 
-      {searchResults && searchResults.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">
-            Search Results from UAE Government Sources
-          </h2>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">
+                {language === "en"
+                  ? "2. Government Services"
+                  : "٢. الخدمات الحكومية"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p
+                className="text-sm text-gray-600"
+                dir={language === "ar" ? "rtl" : "ltr"}
+              >
+                {language === "en"
+                  ? "Searches UAE government services database for official information."
+                  : "يبحث في قاعدة بيانات الخدمات الحكومية الإماراتية للحصول على معلومات رسمية."}
+              </p>
+            </CardContent>
+          </Card>
 
-          {searchResults.map((result, index) => (
-            <Card key={index}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg text-blue-600 hover:underline">
-                  <a
-                    href={result.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {result.title}
-                  </a>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 mb-2">{result.snippet}</p>
-                <div className="flex items-center text-sm text-gray-500">
-                  <span className="font-medium">Source:</span>
-                  <span className="ml-1">{result.source}</span>
-                </div>
-                <div className="mt-2">
-                  <a
-                    href={result.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:underline"
-                  >
-                    {result.url}
-                  </a>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">
+                {language === "en"
+                  ? "3. Combined Results"
+                  : "٣. النتائج المدمجة"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p
+                className="text-sm text-gray-600"
+                dir={language === "ar" ? "rtl" : "ltr"}
+              >
+                {language === "en"
+                  ? "Combines and ranks results from multiple sources to provide the most relevant information."
+                  : "يجمع ويصنف النتائج من مصادر متعددة لتقديم المعلومات الأكثر صلة."}
+              </p>
+            </CardContent>
+          </Card>
         </div>
-      )}
-
-      {searchResults && searchResults.length === 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 p-4 rounded-md">
-          <h3 className="font-semibold">No Results Found</h3>
-          <p>
-            No information found for "{query}" in UAE government sources. Try
-            different search terms.
-          </p>
-        </div>
-      )}
+      </div>
     </div>
   );
 };

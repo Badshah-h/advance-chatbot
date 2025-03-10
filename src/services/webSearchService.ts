@@ -1,191 +1,191 @@
 /**
- * Web Search Service for UAE Government Information
- * This service searches across UAE government websites for information in real-time
+ * Web Search Service
+ * Provides a unified interface for searching the web and UAE government services
  */
 
+import { searchUAEGovServices } from "./uaeGovSearchService";
+import { performWebSearch } from "./webSearchHelper";
 import { AIResponse } from "./aiService";
-import { searchGovernmentServices } from "./uaeGovServices";
 
-// Define the search result type
-interface SearchResult {
-  title: string;
-  snippet: string;
-  url: string;
-  source: string;
-  lastUpdated?: string;
-  relevance?: number;
-}
-
-// UAE Government sources for API calls
-const UAE_GOV_SOURCES = {
-  ministries:
-    process.env.UAE_MINISTRIES_API || "https://api.u.ae/api/ministries",
-  authorities:
-    process.env.UAE_AUTHORITIES_API || "https://api.u.ae/api/authorities",
-  services: process.env.UAE_SERVICES_API || "https://api.u.ae/api/services",
-};
-
-// This function is now deprecated in favor of searchGovernmentServices in uaeGovServices.ts
-// Keeping it for backward compatibility
-export async function searchGovernmentWebsites(
+/**
+ * Search for information using multiple sources
+ * @param query The search query
+ * @param language The language (en/ar)
+ * @returns Promise with AI response containing search results
+ */
+export async function searchWeb(
   query: string,
   language: "en" | "ar" = "en",
 ): Promise<AIResponse> {
   try {
-    // Forward the request to the new implementation
-    return await searchGovernmentServices(query, language);
-  } catch (error) {
-    console.error("Error in searchGovernmentWebsites:", error);
+    // Perform web search to get general information
+    const webResults = await performWebSearch(query, 3);
 
-    // Fall back to the AI service
-    const { generateAIResponse } = await import("./aiService");
-    return await generateAIResponse(query, language);
-  }
-}
+    // Search UAE government services for specific information
+    const govServices = await searchUAEGovServices(query, { language });
 
-/**
- * Search UAE government websites using a real search API
- * @param query The search query
- * @param language The language (en/ar)
- * @returns Promise with search results
- */
-async function searchWebsites(
-  query: string,
-  language: "en" | "ar",
-): Promise<SearchResult[]> {
-  try {
-    // In a real implementation, this would use a search API like Google Custom Search API
-    // or a specialized UAE government search API
+    // Combine the results
+    let content = "";
 
-    // Example API call (commented out as it's just an example)
-    /*
-    const searchApiKey = process.env.SEARCH_API_KEY;
-    const searchEngineId = process.env.SEARCH_ENGINE_ID;
-    const response = await fetch(
-      `https://www.googleapis.com/customsearch/v1?key=${searchApiKey}&cx=${searchEngineId}&q=${encodeURIComponent(query)}&lr=lang_${language}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+    // Add web search results if available
+    if (webResults) {
+      content += webResults;
+    }
+
+    // Add government service results if available
+    if (govServices && govServices.length > 0) {
+      content +=
+        "\n\nI found the following government services that might be relevant:\n\n";
+
+      govServices.slice(0, 3).forEach((result, index) => {
+        const service = result.service;
+        content += `**${service.title}**\n`;
+        content += `${service.description}\n`;
+        content += `Authority: ${service.authority}\n`;
+        content += `More info: ${service.url}\n\n`;
+      });
+
+      if (govServices.length > 3) {
+        content += `There are ${govServices.length - 3} more services available. Would you like to see more?\n\n`;
       }
-    );
-    
-    if (!response.ok) {
-      throw new Error(`Search API request failed with status ${response.status}`);
     }
-    
-    const data = await response.json();
-    
-    // Map the search results to our format
-    const results: SearchResult[] = data.items.map((item: any) => ({
-      title: item.title,
-      snippet: item.snippet,
-      url: item.link,
-      source: item.displayLink,
-      lastUpdated: new Date().toISOString().split('T')[0] // Most search APIs don't provide last updated date
-    }));
-    
-    return results;
-    */
 
-    // For now, return an empty array
-    // In a production environment, this would return actual search results
-    return [];
+    // If no results were found, provide a fallback response
+    if (!content) {
+      content =
+        language === "en"
+          ? "I couldn't find specific information about that. Could you please provide more details or try a different search term?"
+          : "لم أتمكن من العثور على معلومات محددة حول ذلك. هل يمكنك تقديم المزيد من التفاصيل أو تجربة مصطلح بحث مختلف؟";
+    }
+
+    // Generate quick replies based on the query and results
+    const quickReplies = generateQuickReplies(query, govServices, language);
+
+    return {
+      content,
+      metadata: {
+        source: "Web Search & UAE Government Services",
+        lastUpdated: new Date().toISOString().split("T")[0],
+        confidenceLevel:
+          govServices && govServices.length > 0 ? "high" : "medium",
+        quickReplies,
+      },
+    };
   } catch (error) {
-    console.error("Error in searchWebsites:", error);
-    return [];
+    console.error("Error in web search:", error);
+
+    // Return a fallback response in case of error
+    return {
+      content:
+        language === "en"
+          ? "I'm sorry, I encountered an error while searching for information. Please try again later."
+          : "آسف، واجهت خطأ أثناء البحث عن المعلومات. يرجى المحاولة مرة أخرى لاحقًا.",
+      metadata: {
+        confidenceLevel: "low",
+        quickReplies: [
+          {
+            id: "try-again",
+            text: language === "en" ? "Try Again" : "حاول مرة أخرى",
+          },
+          { id: "help", text: language === "en" ? "Help" : "مساعدة" },
+        ],
+      },
+    };
   }
 }
 
 /**
- * Format search results into a user-friendly response
+ * Generate quick replies based on the query and search results
+ * @param query The original search query
+ * @param results The search results
+ * @param language The language (en/ar)
+ * @returns Array of quick replies
  */
-function formatSearchResults(
-  results: SearchResult[],
-  language: "en" | "ar",
-): string {
-  if (results.length === 0) {
-    return language === "en"
-      ? "I couldn't find specific information about that from official UAE government sources. Would you like me to provide general information instead?"
-      : "لم أتمكن من العثور على معلومات محددة حول ذلك من مصادر حكومية رسمية في الإمارات. هل ترغب في الحصول على معلومات عامة بدلاً من ذلك؟";
-  }
-
-  let response = "";
-
-  if (language === "en") {
-    response = "**Information from UAE Government Sources:**\n\n";
-
-    // Add the top 3 most relevant results
-    const topResults = results.slice(0, 3);
-    topResults.forEach((result, index) => {
-      response += `**${index + 1}. ${result.title}**\n`;
-      response += `${result.snippet}\n`;
-      response += `*Source: ${result.source}*\n`;
-      response += `[Official Link](${result.url})\n\n`;
-    });
-
-    // Add a note if there are more results
-    if (results.length > 3) {
-      response += `*Found ${results.length} relevant results. I've shown the most relevant ones.*\n\n`;
-    }
-
-    response +=
-      "Would you like more specific information about any of these services?";
-  } else {
-    // Arabic version
-    response = "**معلومات من مصادر حكومية في الإمارات:**\n\n";
-
-    // Add the top 3 most relevant results
-    const topResults = results.slice(0, 3);
-    topResults.forEach((result, index) => {
-      response += `**${index + 1}. ${result.title}**\n`;
-      response += `${result.snippet}\n`;
-      response += `*المصدر: ${result.source}*\n`;
-      response += `[الرابط الرسمي](${result.url})\n\n`;
-    });
-
-    // Add a note if there are more results
-    if (results.length > 3) {
-      response += `*تم العثور على ${results.length} نتيجة ذات صلة. لقد عرضت النتائج الأكثر صلة.*\n\n`;
-    }
-
-    response +=
-      "هل ترغب في الحصول على معلومات أكثر تحديدًا حول أي من هذه الخدمات؟";
-  }
-
-  return response;
-}
-
-/**
- * Generate quick replies based on search results
- */
-function generateQuickRepliesFromResults(
-  results: SearchResult[],
-  language: "en" | "ar",
+function generateQuickReplies(
+  query: string,
+  results: any[] = [],
+  language: "en" | "ar" = "en",
 ): Array<{ id: string; text: string }> {
   const quickReplies: Array<{ id: string; text: string }> = [];
 
-  // Add quick replies based on the search results
-  results.slice(0, 2).forEach((result, index) => {
-    const title = result.title.toLowerCase();
-    const id = `result-${index}`;
+  // Add quick replies based on search results
+  if (results && results.length > 0) {
+    // Add service-specific quick replies
+    const topService = results[0].service;
 
+    if (topService.category === "visa") {
+      quickReplies.push({
+        id: `visa-requirements`,
+        text: language === "en" ? "Visa Requirements" : "متطلبات التأشيرة",
+      });
+      quickReplies.push({
+        id: `visa-fees`,
+        text: language === "en" ? "Visa Fees" : "رسوم التأشيرة",
+      });
+    } else if (topService.category === "identity") {
+      quickReplies.push({
+        id: `id-renewal`,
+        text: language === "en" ? "ID Renewal Process" : "عملية تجديد الهوية",
+      });
+      quickReplies.push({
+        id: `id-documents`,
+        text: language === "en" ? "Required Documents" : "المستندات المطلوبة",
+      });
+    } else if (topService.category === "business") {
+      quickReplies.push({
+        id: `business-setup`,
+        text:
+          language === "en" ? "Business Setup Steps" : "خطوات إنشاء الأعمال",
+      });
+      quickReplies.push({
+        id: `license-fees`,
+        text: language === "en" ? "License Fees" : "رسوم الترخيص",
+      });
+    }
+
+    // Add a quick reply for more results if available
+    if (results.length > 3) {
+      quickReplies.push({
+        id: "more-results",
+        text: language === "en" ? "Show More Results" : "عرض المزيد من النتائج",
+      });
+    }
+  }
+
+  // Add generic quick replies if we don't have enough
+  if (quickReplies.length < 3) {
     quickReplies.push({
-      id,
-      text:
-        language === "en"
-          ? `More about ${result.title.substring(0, 20)}...`
-          : `المزيد عن ${result.title.substring(0, 20)}...`,
+      id: "more-info",
+      text: language === "en" ? "More Information" : "مزيد من المعلومات",
     });
-  });
 
-  // Add some general quick replies
-  quickReplies.push({
-    id: "more-results",
-    text: language === "en" ? "Show More Results" : "عرض المزيد من النتائج",
-  });
+    // Add a refined search suggestion
+    const lowercaseQuery = query.toLowerCase();
+    if (lowercaseQuery.includes("visa") || lowercaseQuery.includes("تأشيرة")) {
+      quickReplies.push({
+        id: "tourist-visa",
+        text: language === "en" ? "Tourist Visa" : "تأشيرة سياحية",
+      });
+    } else if (
+      lowercaseQuery.includes("id") ||
+      lowercaseQuery.includes("هوية")
+    ) {
+      quickReplies.push({
+        id: "emirates-id",
+        text: language === "en" ? "Emirates ID" : "الهوية الإماراتية",
+      });
+    } else if (
+      lowercaseQuery.includes("business") ||
+      lowercaseQuery.includes("أعمال")
+    ) {
+      quickReplies.push({
+        id: "business-license",
+        text: language === "en" ? "Business License" : "رخصة تجارية",
+      });
+    }
+  }
 
+  // Always add a feedback option
   quickReplies.push({
     id: "feedback",
     text: language === "en" ? "Provide Feedback" : "تقديم ملاحظات",

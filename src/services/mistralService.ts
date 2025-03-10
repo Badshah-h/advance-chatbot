@@ -3,6 +3,7 @@
  */
 
 import { AIResponse } from "./aiService";
+import { performWebSearch } from "./webSearchHelper";
 
 // Mistral API configuration
 const MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions";
@@ -36,6 +37,12 @@ export async function generateMistralResponse(
     // Determine which model to use (Mixtral is more powerful)
     const model = "mixtral-8x7b-32768";
 
+    // Perform web search to get relevant information
+    const searchResults = await performWebSearch(query);
+
+    // Combine search results with the user query
+    const enhancedQuery = searchResults + query;
+
     // Prepare the API request
     const response = await fetch(MISTRAL_API_URL, {
       method: "POST",
@@ -47,7 +54,7 @@ export async function generateMistralResponse(
         model: model,
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: query },
+          { role: "user", content: enhancedQuery },
         ],
         temperature: 0.7,
         max_tokens: 800,
@@ -81,12 +88,7 @@ export async function generateMistralResponse(
 
     return {
       content,
-      metadata: {
-        confidenceLevel: "high",
-        source: model.includes("mixtral") ? "Mixtral-8x7B" : "Mistral-7B",
-        lastUpdated: new Date().toISOString().split("T")[0],
-        quickReplies,
-      },
+      metadata: null,
     };
   } catch (error) {
     console.error("Error calling Mistral API:", error);
@@ -128,6 +130,14 @@ export async function processDocumentWithMistral(
     // Determine which model to use (Mixtral is more powerful)
     const model = "mixtral-8x7b-32768";
 
+    // Perform web search based on document content to get relevant information
+    const searchQuery = `${fileInfo.fileName} ${fileInfo.text.substring(0, 100)}`;
+    const searchResults = await performWebSearch(searchQuery);
+
+    // Combine search results with the document content
+    const documentContent = `Document filename: ${fileInfo.fileName}\nDocument content: ${fileInfo.text}`;
+    const enhancedQuery = searchResults + documentContent;
+
     // Prepare the API request
     const response = await fetch(MISTRAL_API_URL, {
       method: "POST",
@@ -141,7 +151,7 @@ export async function processDocumentWithMistral(
           { role: "system", content: systemPrompt },
           {
             role: "user",
-            content: `Document filename: ${fileInfo.fileName}\nDocument content: ${fileInfo.text}`,
+            content: enhancedQuery,
           },
         ],
         temperature: 0.5,
@@ -177,17 +187,7 @@ export async function processDocumentWithMistral(
 
     return {
       content,
-      metadata: {
-        confidenceLevel: "high",
-        source: model.includes("mixtral") ? "Mixtral-8x7B" : "Mistral-7B",
-        lastUpdated: new Date().toISOString().split("T")[0],
-        fileInfo: {
-          fileName: fileInfo.fileName,
-          fileType: fileInfo.fileType,
-          fileSize: fileInfo.fileSize,
-        },
-        quickReplies,
-      },
+      metadata: null,
     };
   } catch (error) {
     console.error("Error calling Mistral API for document processing:", error);

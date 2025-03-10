@@ -199,30 +199,10 @@ export async function generateAIResponse(
   // Use the response formatter for other queries
   const { response, metadata } = findResponse(query);
 
-  // Add source attribution and confidence level
-  let formattedResponse = response;
-
-  if (metadata) {
-    formattedResponse += "\n\n";
-
-    if (metadata.source && metadata.lastUpdated) {
-      formattedResponse += `Source: ${metadata.source} (Last updated: ${metadata.lastUpdated})\n`;
-    }
-
-    if (metadata.confidenceLevel) {
-      formattedResponse += getConfidenceBadge(metadata.confidenceLevel);
-    }
-  }
-
-  // Add appropriate quick replies based on the query context
-  const quickReplies = generateContextualQuickReplies(query, language);
-
+  // Return the exact response without any formatting
   return {
-    content: formattedResponse,
-    metadata: {
-      ...metadata,
-      quickReplies,
-    },
+    content: response,
+    metadata: null,
   };
 }
 
@@ -297,30 +277,7 @@ async function generateRichCardResponse(
 
         return {
           content: richCardContent,
-          metadata: {
-            confidenceLevel: "high",
-            source: govServiceData.source,
-            lastUpdated: govServiceData.lastUpdated,
-            quickReplies: [
-              {
-                id: "more-details",
-                text: language === "en" ? "More details" : "المزيد من التفاصيل",
-              },
-              {
-                id: "requirements",
-                text: language === "en" ? "Requirements" : "المتطلبات",
-              },
-              {
-                id: "apply",
-                text: language === "en" ? "How to apply" : "كيفية التقديم",
-              },
-              {
-                id: "related-services",
-                text:
-                  language === "en" ? "Related Services" : "الخدمات ذات الصلة",
-              },
-            ],
-          },
+          metadata: null,
         };
       }
     } catch (govError) {
@@ -341,9 +298,7 @@ async function generateRichCardResponse(
             language === "en"
               ? "I couldn't find specific information about that service."
               : "لم أتمكن من العثور على معلومات محددة حول هذه الخدمة.",
-          metadata: {
-            confidenceLevel: "low",
-          },
+          metadata: null,
         };
       }
       var serviceData = staticService;
@@ -369,25 +324,7 @@ async function generateRichCardResponse(
 
     return {
       content: richCardContent,
-      metadata: {
-        confidenceLevel: "high",
-        source: "Al Yalayis Government Services",
-        lastUpdated: service?.lastUpdated || "2023-12-01",
-        quickReplies: [
-          {
-            id: "more-details",
-            text: language === "en" ? "More details" : "المزيد من التفاصيل",
-          },
-          {
-            id: "requirements",
-            text: language === "en" ? "Requirements" : "المتطلبات",
-          },
-          {
-            id: "apply",
-            text: language === "en" ? "How to apply" : "كيفية التقديم",
-          },
-        ],
-      },
+      metadata: null,
     };
   } catch (error) {
     console.error("Error in generateRichCardResponse:", error);
@@ -399,9 +336,7 @@ async function generateRichCardResponse(
           language === "en"
             ? "I couldn't find specific information about that service."
             : "لم أتمكن من العثور على معلومات محددة حول هذه الخدمة.",
-        metadata: {
-          confidenceLevel: "low",
-        },
+        metadata: null,
       };
     }
 
@@ -425,25 +360,7 @@ async function generateRichCardResponse(
 
     return {
       content: richCardContent,
-      metadata: {
-        confidenceLevel: "high",
-        source: "Al Yalayis Government Services",
-        lastUpdated: "2023-12-01",
-        quickReplies: [
-          {
-            id: "more-details",
-            text: language === "en" ? "More details" : "المزيد من التفاصيل",
-          },
-          {
-            id: "requirements",
-            text: language === "en" ? "Requirements" : "المتطلبات",
-          },
-          {
-            id: "apply",
-            text: language === "en" ? "How to apply" : "كيفية التقديم",
-          },
-        ],
-      },
+      metadata: null,
     };
   }
 }
@@ -745,15 +662,7 @@ export async function processDocumentWithAI(
 
   return {
     content: responseText,
-    metadata: {
-      confidenceLevel,
-      fileInfo: {
-        fileName: fileInfo.fileName,
-        fileType: fileInfo.fileType,
-        fileSize: fileInfo.fileSize,
-      },
-      quickReplies,
-    },
+    metadata: null,
   };
 }
 

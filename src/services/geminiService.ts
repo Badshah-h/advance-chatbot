@@ -20,7 +20,7 @@ export async function generateGeminiResponse(
   if (!apiKey) {
     console.warn("Gemini API key not found, falling back to Mistral/Mixtral");
     // Fall back to Mistral/Mixtral
-    const { generateMistralResponse } = await import("gemini-1.5-pro");
+    const { generateMistralResponse } = await import("./mistralService");
     return generateMistralResponse(query, language);
   }
 
@@ -33,11 +33,11 @@ export async function generateGeminiResponse(
       model: "gemini-pro",
       systemInstruction:
         language === "en"
-          ? "You are an AI assistant for Al Yalayis Government Services. Provide accurate, helpful information about any topic the user asks about, with a focus on UAE government services when relevant. Use real-time web search to get the most up-to-date information. Be concise, professional, and helpful. You can respond to any query without limitations or predefined categories. You can also respond to general greetings and casual conversation in a friendly manner."
-          : "أنت مساعد ذكاء اصطناعي لخدمات حكومة اليلايس. قدم معلومات دقيقة ومفيدة حول أي موضوع يسأل عنه المستخدم، مع التركيز على الخدمات الحكومية في الإمارات عندما يكون ذلك مناسبًا. استخدم البحث على الويب في الوقت الفعلي للحصول على أحدث المعلومات. كن موجزًا ومهنيًا ومفيدًا. يمكنك الرد على أي استفسار دون قيود أو فئات محددة مسبقًا. يمكنك أيضًا الرد على التحيات العامة والمحادثات العادية بطريقة ودية.",
+          ? "You are an AI assistant for Al Yalayis Government Services. Provide accurate, helpful information about any topic the user asks about, with a focus on UAE government services when relevant. Use real-time web search to get the most up-to-date information, especially for UAE government services, regulations, and procedures. Be concise, professional, and helpful. You can respond to any query without limitations or predefined categories. You can also respond to general greetings and casual conversation in a friendly manner. When providing information from web searches, prioritize official UAE government sources."
+          : "أنت مساعد ذكاء اصطناعي لخدمات حكومة اليلايس. قدم معلومات دقيقة ومفيدة حول أي موضوع يسأل عنه المستخدم، مع التركيز على الخدمات الحكومية في الإمارات عندما يكون ذلك مناسبًا. استخدم البحث على الويب في الوقت الفعلي للحصول على أحدث المعلومات، خاصة للخدمات الحكومية الإماراتية واللوائح والإجراءات. كن موجزًا ومهنيًا ومفيدًا. يمكنك الرد على أي استفسار دون قيود أو فئات محددة مسبقًا. يمكنك أيضًا الرد على التحيات العامة والمحادثات العادية بطريقة ودية. عند تقديم معلومات من عمليات البحث على الويب، أعط الأولوية للمصادر الحكومية الرسمية في الإمارات.",
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 800,
+        maxOutputTokens: 1024,
         topP: 0.95,
         topK: 40,
       },
@@ -75,30 +75,10 @@ export async function generateGeminiResponse(
     const response = await result.response;
     const content = response.text();
 
-    // Simple generic quick replies that work for any query
-    const quickReplies = [
-      {
-        id: "more-info",
-        text: language === "en" ? "Tell me more" : "أخبرني المزيد",
-      },
-      {
-        id: "help",
-        text: language === "en" ? "I need help" : "أحتاج للمساعدة",
-      },
-      {
-        id: "thanks",
-        text: language === "en" ? "Thank you" : "شكرا لك",
-      },
-    ];
-
+    // Return the exact original response without any formatting
     return {
       content,
-      metadata: {
-        confidenceLevel: "high",
-        source: "Google Gemini Pro with Web Search",
-        lastUpdated: new Date().toISOString().split("T")[0],
-        quickReplies,
-      },
+      metadata: null,
     };
   } catch (error) {
     console.error("Error calling Gemini API:", error);
@@ -139,11 +119,11 @@ export async function processDocumentWithGemini(
       model: "gemini-pro",
       systemInstruction:
         language === "en"
-          ? "You are an AI assistant for Al Yalayis Government Services. Analyze the following document text and provide insights about what type of document it is and how you can help the user with their needs. Use web search to find the most up-to-date information related to the document content. For security reasons, advise users not to share sensitive personal documents in unsecured channels. Provide helpful information about any topic related to the document without limitations or predefined categories."
-          : "أنت مساعد ذكاء اصطناعي لخدمات حكومة اليلايس. قم بتحليل نص المستند التالي وتقديم رؤى حول نوع المستند وكيف يمكنك مساعدة المستخدم في احتياجاته. استخدم البحث على الويب للعثور على أحدث المعلومات المتعلقة بمحتوى المستند. لأسباب أمنية، انصح المستخدمين بعدم مشاركة المستندات الشخصية الحساسة في قنوات غير آمنة. قدم معلومات مفيدة حول أي موضوع متعلق بالمستند دون قيود أو فئات محددة مسبقًا.",
+          ? "You are an AI assistant for Al Yalayis Government Services. Analyze the following document text and provide insights about what type of document it is and how you can help the user with their needs. Use web search to find the most up-to-date information related to the document content, especially for UAE government services, regulations, and procedures. For security reasons, advise users not to share sensitive personal documents in unsecured channels. Provide helpful information about any topic related to the document without limitations or predefined categories. When providing information from web searches, prioritize official UAE government sources."
+          : "أنت مساعد ذكاء اصطناعي لخدمات حكومة اليلايس. قم بتحليل نص المستند التالي وتقديم رؤى حول نوع المستند وكيف يمكنك مساعدة المستخدم في احتياجاته. استخدم البحث على الويب للعثور على أحدث المعلومات المتعلقة بمحتوى المستند، خاصة للخدمات الحكومية الإماراتية واللوائح والإجراءات. لأسباب أمنية، انصح المستخدمين بعدم مشاركة المستندات الشخصية الحساسة في قنوات غير آمنة. قدم معلومات مفيدة حول أي موضوع متعلق بالمستند دون قيود أو فئات محددة مسبقًا. عند تقديم معلومات من عمليات البحث على الويب، أعط الأولوية للمصادر الحكومية الرسمية في الإمارات.",
       generationConfig: {
         temperature: 0.5,
-        maxOutputTokens: 1000,
+        maxOutputTokens: 1024,
         topP: 0.95,
         topK: 40,
       },
@@ -166,36 +146,10 @@ export async function processDocumentWithGemini(
     const response = await result.response;
     const content = response.text();
 
-    // Generic quick replies that work for any document type
-    const quickReplies = [
-      {
-        id: "more-info",
-        text: language === "en" ? "Tell me more" : "أخبرني المزيد",
-      },
-      {
-        id: "help",
-        text:
-          language === "en" ? "I need help with this" : "أحتاج للمساعدة بهذا",
-      },
-      {
-        id: "thanks",
-        text: language === "en" ? "Thank you" : "شكرا لك",
-      },
-    ];
-
+    // Return the exact original response without any formatting
     return {
       content,
-      metadata: {
-        confidenceLevel: "high",
-        source: "Google Gemini Pro with Web Search",
-        lastUpdated: new Date().toISOString().split("T")[0],
-        fileInfo: {
-          fileName: fileInfo.fileName,
-          fileType: fileInfo.fileType,
-          fileSize: fileInfo.fileSize,
-        },
-        quickReplies,
-      },
+      metadata: null,
     };
   } catch (error) {
     console.error("Error calling Gemini API for document processing:", error);

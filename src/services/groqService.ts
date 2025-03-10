@@ -3,6 +3,7 @@
  */
 
 import { AIResponse } from "./aiService";
+import { performWebSearch } from "./webSearchHelper";
 
 // Groq API configuration
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
@@ -33,6 +34,12 @@ export async function generateGroqResponse(
         ? "You are an AI assistant for Al Yalayis Government Services. Provide accurate, helpful information about any topic the user asks about, with a focus on UAE government services when relevant. Be concise, professional, and helpful. You can respond to any query without limitations or predefined categories. You can also respond to general greetings and casual conversation in a friendly manner."
         : "أنت مساعد ذكاء اصطناعي لخدمات حكومة اليلايس. قدم معلومات دقيقة ومفيدة حول أي موضوع يسأل عنه المستخدم، مع التركيز على الخدمات الحكومية في الإمارات عندما يكون ذلك مناسبًا. كن موجزًا ومهنيًا ومفيدًا. يمكنك الرد على أي استفسار دون قيود أو فئات محددة مسبقًا. يمكنك أيضًا الرد على التحيات العامة والمحادثات العادية بطريقة ودية.";
 
+    // Perform web search to get relevant information
+    const searchResults = await performWebSearch(query);
+
+    // Combine search results with the user query
+    const enhancedQuery = searchResults + query;
+
     // Prepare the API request
     const response = await fetch(GROQ_API_URL, {
       method: "POST",
@@ -44,7 +51,7 @@ export async function generateGroqResponse(
         model: "mixtral-8x7b-32768", // Groq offers Mixtral model
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: query },
+          { role: "user", content: enhancedQuery },
         ],
         temperature: 0.7,
         max_tokens: 800,
@@ -78,12 +85,7 @@ export async function generateGroqResponse(
 
     return {
       content,
-      metadata: {
-        confidenceLevel: "high",
-        source: "Groq (Mixtral-8x7B)",
-        lastUpdated: new Date().toISOString().split("T")[0],
-        quickReplies,
-      },
+      metadata: null,
     };
   } catch (error) {
     console.error("Error calling Groq API:", error);
@@ -122,6 +124,14 @@ export async function processDocumentWithGroq(
         ? "You are an AI assistant for Al Yalayis Government Services. Analyze the following document text and provide insights about what type of document it is and how you can help the user with their needs. For security reasons, advise users not to share sensitive personal documents in unsecured channels. Provide helpful information about any topic related to the document without limitations or predefined categories."
         : "أنت مساعد ذكاء اصطناعي لخدمات حكومة اليلايس. قم بتحليل نص المستند التالي وتقديم رؤى حول نوع المستند وكيف يمكنك مساعدة المستخدم في احتياجاته. لأسباب أمنية، انصح المستخدمين بعدم مشاركة المستندات الشخصية الحساسة في قنوات غير آمنة. قدم معلومات مفيدة حول أي موضوع متعلق بالمستند دون قيود أو فئات محددة مسبقًا.";
 
+    // Perform web search based on document content to get relevant information
+    const searchQuery = `${fileInfo.fileName} ${fileInfo.text.substring(0, 100)}`;
+    const searchResults = await performWebSearch(searchQuery);
+
+    // Combine search results with the document content
+    const documentContent = `Document filename: ${fileInfo.fileName}\nDocument content: ${fileInfo.text}`;
+    const enhancedQuery = searchResults + documentContent;
+
     // Prepare the API request
     const response = await fetch(GROQ_API_URL, {
       method: "POST",
@@ -135,7 +145,7 @@ export async function processDocumentWithGroq(
           { role: "system", content: systemPrompt },
           {
             role: "user",
-            content: `Document filename: ${fileInfo.fileName}\nDocument content: ${fileInfo.text}`,
+            content: enhancedQuery,
           },
         ],
         temperature: 0.5,
@@ -171,17 +181,7 @@ export async function processDocumentWithGroq(
 
     return {
       content,
-      metadata: {
-        confidenceLevel: "high",
-        source: "Groq (Mixtral-8x7B)",
-        lastUpdated: new Date().toISOString().split("T")[0],
-        fileInfo: {
-          fileName: fileInfo.fileName,
-          fileType: fileInfo.fileType,
-          fileSize: fileInfo.fileSize,
-        },
-        quickReplies,
-      },
+      metadata: null,
     };
   } catch (error) {
     console.error("Error calling Groq API for document processing:", error);
